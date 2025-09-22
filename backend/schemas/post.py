@@ -13,6 +13,7 @@ class BoundingBox(BaseModel):
 class Post(BaseModel):
     id: str
     photo_url: str
+    photo_public_id: str
     description: Optional[str] = None
     bounding_box_tags : Optional[dict[str, BoundingBox]] = None
     general_tags : Optional[List[str]] = None

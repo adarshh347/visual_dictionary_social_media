@@ -3,12 +3,28 @@ from fastapi.staticfiles import StaticFiles
 from backend.routers import posts
 from backend.routers.posts import test_connection
 # above syntax to keep in mind
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI(title="visual dictionary")
+
+# for security reasons, browsers block requests between multiple addresses
+# CORS(cross origin resource sharing) allows both to get connected
+origins =[
+    "http://localhost:5173"
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 @app.on_event("startup")
 async def startup_event():
     await test_connection()
-
 # @app.get("/")
 # def random():
 #     return {"check":"lolohoneysingh"}
