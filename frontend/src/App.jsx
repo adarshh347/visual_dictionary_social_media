@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import UploadForm from './components/UploadForm';
 import './App.css';
 
@@ -30,10 +31,10 @@ function App() {
             <hr/>
             <div className="gallery-grid">
                 {posts.map((post) => (
-                    <div key={post.id} className="gallery-item">
-                        {/* CORRECTED: Use backticks (`) here as well */}
-                        <img src={post.photo_url} alt={`Post ${post.id}`} />
-                    </div>
+                    <Link to={`/posts/${post.id}`} key={post.id} className="gallery-item" >
+                    <img src={post.photo_url} alt={post.description || `Post ${post.id}`}  />
+
+                        </Link>
                 ))}
             </div>
         </div>
