@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="460fa93e-1800-479e-99dc-3c594dbc886a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/frontend/src/components/BoundingBoxEditor.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/PostDetailPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/PostDetailPage.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
