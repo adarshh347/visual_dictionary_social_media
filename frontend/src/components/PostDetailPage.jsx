@@ -72,7 +72,7 @@ function PostDetailPage() {
       <div className="post-detail-content">
 
         <div className="image-section">
-           <BoundingBoxEditor post={post} />
+           <BoundingBoxEditor post={post} onUpdate={fetchPost} />
         </div>
 
 
