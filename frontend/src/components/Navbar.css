@@ -1,0 +1,28 @@
+/* frontend/src/components/Navbar.css */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 5%;
+  background-color: #1e1e1e;
+  border-bottom: 1px solid #333;
+}
+
+.nav-logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+  text-decoration: none;
+}
+
+.nav-links a {
+  color: #ccc;
+  text-decoration: none;
+  margin-left: 1.5rem;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: #fff;
+}

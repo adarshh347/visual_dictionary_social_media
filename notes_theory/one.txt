@@ -1,0 +1,28 @@
+app.mount(), app.include_router()
+
+
+useState, useEffect
+useState -> lets your components remember the values and update it(clicks, form inputs, api results)
+useEffect -> yet to understand clearly
+
+const(locker),var,let
+
+mounting in react
+When React shows your component (<App />) for the very first time in the browser, that’s called mounting
+(like placing a new item on the screen). 👉 At that moment, React executes the code inside your useEffect.
+Because you passed an empty dependency array [], it means: Run this function only once (when the component mounts).
+Never run it again unless the component is removed and re-added.
+🔹 Example Analogy
+Imagine opening an app for the first time:
+You want to load posts from the server only once at startup.You don’t want to call the server every time the
+screen refreshes or re-renders. That’s why you wrap your fetch code in useEffect(() => {...}, []).
+
+
+try catch syntax
+
+grid-template-columns
+
+const formData = new FormData();: This is the essential step for uploading files. The FormData object is a native
+browser API used to construct a set of key/value pairs representing fields in a web form, which can then be sent
+via AJAX (like with Axios).
+
