@@ -1,6 +1,10 @@
 fastapi
 motor
-python-dotenv
+pydantic-settings
 uvicorn
+python-dotenv
 python-multipart
 cloudinary
+gunicorn
+httpx
+bson
