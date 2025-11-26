@@ -4,12 +4,14 @@ import uuid
 import os
 import math
 import json
+import random
 from datetime import datetime, timezone
 from bson.objectid  import ObjectId
 from bson.errors import InvalidId
 # shutil(high level file operations) vs os (low level file operations)
 import shutil
-from backend.schemas.post import Post, PostUpdate, PaginatedPosts
+from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, StoryFlowRequest
+
 from backend.database import post_collection,client
 import cloudinary
 import cloudinary.uploader
@@ -239,3 +241,132 @@ async def get_highlights():
 # In backend/routers/posts.py
 
 
+
+from backend.services.llm_service import llm_service
+
+@router.get("/summary/{tag}")
+async def get_tag_summary(tag: str):
+    """
+    Aggregates text from all posts with the given tag and generates a summary and plot suggestions using LLM.
+    """
+    # Find all posts that have the specified tag in their general_tags list
+    query = {"general_tags": tag}
+    posts_cursor = post_collection.find(query)
+    
+    aggregated_text = []
+    
+    async for post in posts_cursor:
+        # Extract text from text_blocks
+        if "text_blocks" in post:
+            for block in post["text_blocks"]:
+                if "content" in block and block["content"]:
+                    aggregated_text.append(block["content"])
+                    
+    full_text = "\n\n".join(aggregated_text)
+    
+    # Generate summary and plots
+    result = llm_service.generate_summary_and_plots(full_text)
+    
+    return result
+
+@router.post("/summary/generate_story")
+async def generate_story(request: StoryGenerationRequest):
+    """
+    Generates a long story based on the aggregated text of a tag, a plot suggestion, and user commentary.
+    """
+    # Find all posts that have the specified tag in their general_tags list
+    query = {"general_tags": request.tag}
+    posts_cursor = post_collection.find(query)
+    
+    aggregated_text = []
+    
+    async for post in posts_cursor:
+        # Extract text from text_blocks
+        if "text_blocks" in post:
+            for block in post["text_blocks"]:
+                if "content" in block and block["content"]:
+                    aggregated_text.append(block["content"])
+                    
+    full_text = "\n\n".join(aggregated_text)
+    
+    # Generate story
+    result = llm_service.generate_story_from_plot(
+        aggregated_text=full_text,
+        plot_suggestion=request.plot_suggestion,
+        user_commentary=request.user_commentary
+    )
+    
+    return result
+
+@router.get("/untagged/random", response_model=List[Post])
+async def get_random_untagged_posts(limit: int = 5):
+    """
+    Fetches random posts that have no general_tags or empty general_tags.
+    """
+    # Query for posts with no general_tags or empty general_tags
+    query = {
+        "$or": [
+            {"general_tags": {"$exists": False}},
+            {"general_tags": []},
+            {"general_tags": {"$eq": None}}
+        ]
+    }
+    
+    # Get all matching posts
+    posts_cursor = post_collection.find(query)
+    all_posts = []
+    async for post in posts_cursor:
+        all_posts.append(post_helper(post))
+    
+    # Randomly select up to 'limit' posts
+    if len(all_posts) <= limit:
+        return all_posts
+    else:
+        return random.sample(all_posts, limit)
+
+@router.patch("/{post_id}/add-tag", response_model=Post)
+async def add_tag_to_post(post_id: str, request: AddTagRequest):
+    """
+    Adds a tag to a post's general_tags list. If the tag already exists, does nothing.
+    """
+    try:
+        obj_id = ObjectId(post_id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid ObjectId format")
+    
+    # Get the current post
+    post = await post_collection.find_one({"_id": obj_id})
+    if not post:
+        raise HTTPException(status_code=404, detail=f"Post with id {post_id} not found")
+    
+    # Get current tags or initialize empty list
+    current_tags = post.get("general_tags", []) or []
+    
+    # Add tag if it doesn't exist
+    if request.tag not in current_tags:
+        current_tags.append(request.tag)
+    
+    # Update the post
+    update_data = {
+        "general_tags": current_tags,
+        "updated_at": datetime.now(timezone.utc)
+    }
+    
+    result = await post_collection.update_one(
+        {"_id": obj_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 1 or result.matched_count == 1:
+        updated_post = await post_collection.find_one({"_id": obj_id})
+        return post_helper(updated_post)
+    
+    raise HTTPException(status_code=500, detail="Failed to update post")
+
+@router.post("/summary/generate_story_flow")
+async def generate_story_flow(request: StoryFlowRequest):
+    """
+    Generates a summarized flow of the story in phrases/keywords (ev1->ev2->ev3 format).
+    """
+    result = llm_service.generate_story_flow(request.story)
+    return result

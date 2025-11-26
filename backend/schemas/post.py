@@ -29,20 +29,23 @@ class Post(BaseModel):
     general_tags : Optional[List[str]] = None
 
 
-# note in PostUpdate: by default providing new data in update request will override the old data not get merged with it
-# merging is custom behavior that we must define in our backend logic
-# the schema's job is to validate the shape of incoming data, not to decide how it should be combined with existing data
-# Lesson: MERGING LOGIC SHOULD BE WRITTEN IN ROUTER SECTION WHEN CREATING ENDPOINTS
-
 class PostUpdate(BaseModel):
     text_blocks: Optional[List[TextBlock]] = None
     bounding_box_tags: Optional[dict[str, BoundingBox]] = None
     general_tags: Optional[List[str]] = None
 
-
-# a new introduced schema
-
 class PaginatedPosts(BaseModel):
     posts: List[Post]
     total_pages: int
     current_page: int
+
+class StoryGenerationRequest(BaseModel):
+    tag: str
+    plot_suggestion: str
+    user_commentary: str
+
+class AddTagRequest(BaseModel):
+    tag: str
+
+class StoryFlowRequest(BaseModel):
+    story: str
