@@ -8,14 +8,15 @@ from backend.config import settings
 # This fixes the "TLSV1_ALERT_INTERNAL_ERROR" SSL handshake issue
 try:
     # MongoDB Atlas connection
-    # The connection string should include SSL/TLS parameters
-    # For production (Render/Linux), SSL works with default settings
-    # For local development (Windows), SSL may need relaxed settings
+    # MongoDB Atlas requires TLS/SSL for all connections
+    # The connection string (MONGO_DETAILS) should already include TLS parameters
+    # For mongodb+srv:// URLs, TLS is automatically enabled
     import os
     
     # Check if we're in a production environment (Render sets PORT env var)
     is_render = os.getenv("PORT") is not None
     
+    # Base connection parameters
     connection_params = {
         "serverSelectionTimeoutMS": 30000,
         "socketTimeoutMS": 30000,
@@ -26,11 +27,17 @@ try:
         "minPoolSize": 10
     }
     
-    # Only add tlsAllowInvalidCertificates for local development (not on Render)
+    # MongoDB Atlas connection strings (mongodb+srv://) handle TLS automatically
+    # Only add explicit TLS settings for local development if needed
+    # For Render/Linux, let the connection string handle TLS (it should work by default)
     if not is_render:
-        connection_params["tls"] = True
-        connection_params["tlsAllowInvalidCertificates"] = True
+        # On local development (Windows): May need relaxed SSL settings
+        # Only add if connection string doesn't already specify TLS
+        if "mongodb+srv://" not in settings.MONGO_DETAILS:
+            connection_params["tls"] = True
+            connection_params["tlsAllowInvalidCertificates"] = True
     
+    # Create client - let connection string handle TLS for mongodb+srv:// URLs
     client = motor.motor_asyncio.AsyncIOMotorClient(
         settings.MONGO_DETAILS,
         **connection_params
