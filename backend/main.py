@@ -1,31 +1,20 @@
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from backend.routers import posts
-from backend.routers.posts import test_connection
-# above syntax to keep in mind
-from fastapi.middleware.cors import CORSMiddleware
-
-# ............
-from fastapi import FastAPI, HTTPException # Make sure HTTPException is imported
-from fastapi.middleware.cors import CORSMiddleware
-from .routers import posts
-from .database import ping_server, post_collection
-from .routers.posts import post_helper
-from .schemas.post import PaginatedPosts, Post # <-- Import schemas
-from typing import List, Optional # <-- Import List and Optional
-import math # <-- Import math
-import pprint # <-- Import pprint
-# .............
-
-
-
+from backend.routers.posts import test_connection, post_helper
+from backend.database import post_collection
+from backend.schemas.post import PaginatedPosts
+import math
 
 app = FastAPI(title="visual dictionary")
 
 # for security reasons, browsers block requests between multiple addresses
 # CORS(cross origin resource sharing) allows both to get connected
-origins =[
-    "http://localhost:5173"
+origins = [
+    "http://localhost:5173",
+    "https://sharirasutra.onrender.com",
+    "http://localhost:3000",
+    "http://localhost:5000",
 ]
 
 
@@ -82,12 +71,11 @@ async def get_posts_with_text_main(page: int = 1, limit: int = 50):
 
     return response_data
 
-# ... (Keep your @app.on_event("startup") and app.include_router lines) ...
+# Include routers
 app.include_router(posts.router, prefix="/api/v1/posts", tags=["Posts"])
+app.include_router(posts.text_posts_router, prefix="/api/v1/posts", tags=["Posts Text"])
 
-# app.mount("/static", StaticFiles(directory="static"), name="static")
-# All routes in that file will now be available under the "/api/v1/posts" prefix
-app.include_router(posts.router, prefix="/api/v1/posts", tags=["Posts"])
-# tags=["Posts"]: This groups all the post routes under a "Posts" heading in your automatic API documentation.
-
-app.include_router(posts.text_posts_router, prefix="/api/v1/posts", tags=["Posts Text"]) # Use same prefix
+# Health check endpoint for Render
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "sharirasutra"}

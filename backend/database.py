@@ -1,5 +1,4 @@
 import motor.motor_asyncio
-import ssl
 # pymongo(synchronous) and motor(asynchronous) both are python libraries that are used to interact with mongodb database
 # the node framework equivalent is mongoose
 from backend.config import settings
@@ -8,25 +7,33 @@ from backend.config import settings
 # For MongoDB Atlas on Windows, we need explicit TLS configuration
 # This fixes the "TLSV1_ALERT_INTERNAL_ERROR" SSL handshake issue
 try:
-    # Create SSL context for MongoDB Atlas
-    # Note: tlsAllowInvalidCertificates=True is for development only
-    # In production, ensure proper certificate validation
-    ssl_context = ssl.create_default_context()
-    # For development: allow invalid certificates (Windows SSL compatibility)
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
+    # MongoDB Atlas connection
+    # The connection string should include SSL/TLS parameters
+    # For production (Render/Linux), SSL works with default settings
+    # For local development (Windows), SSL may need relaxed settings
+    import os
+    
+    # Check if we're in a production environment (Render sets PORT env var)
+    is_render = os.getenv("PORT") is not None
+    
+    connection_params = {
+        "serverSelectionTimeoutMS": 30000,
+        "socketTimeoutMS": 30000,
+        "connectTimeoutMS": 30000,
+        "retryWrites": True,
+        "retryReads": True,
+        "maxPoolSize": 50,
+        "minPoolSize": 10
+    }
+    
+    # Only add tlsAllowInvalidCertificates for local development (not on Render)
+    if not is_render:
+        connection_params["tls"] = True
+        connection_params["tlsAllowInvalidCertificates"] = True
     
     client = motor.motor_asyncio.AsyncIOMotorClient(
         settings.MONGO_DETAILS,
-        tls=True,
-        tlsAllowInvalidCertificates=True,  # Development only - fixes Windows SSL issues
-        serverSelectionTimeoutMS=30000,  # 30 seconds timeout for server selection
-        socketTimeoutMS=30000,  # 30 seconds socket timeout
-        connectTimeoutMS=30000,  # 30 seconds connection timeout
-        retryWrites=True,
-        retryReads=True,
-        maxPoolSize=50,
-        minPoolSize=10
+        **connection_params
     )
 except Exception as e:
     print(f"Error creating MongoDB client: {e}")
