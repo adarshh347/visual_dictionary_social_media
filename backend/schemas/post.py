@@ -47,5 +47,15 @@ class StoryGenerationRequest(BaseModel):
 class AddTagRequest(BaseModel):
     tag: str
 
+class AddTagAndStoryRequest(BaseModel):
+    tag: str
+    story: str
+
 class StoryFlowRequest(BaseModel):
     story: str
+    detail_level: Optional[str] = "med"  # "small", "med", "big"
+
+class PostSuggestionRequest(BaseModel):
+    text_blocks: List[TextBlock]
+    suggestion_type: str  # "short_prose" or "story"
+    user_commentary: Optional[str] = ""

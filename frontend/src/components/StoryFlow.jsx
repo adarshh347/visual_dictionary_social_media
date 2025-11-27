@@ -3,20 +3,23 @@ import axios from 'axios';
 
 const API_URL = 'http://127.0.0.1:5007';
 
-function StoryFlow({ story }) {
+function StoryFlow({ story, detailLevel = 'med' }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [flow, setFlow] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedDetailLevel, setSelectedDetailLevel] = useState(detailLevel);
 
   const generateFlow = async () => {
-    if (!story || flow) return; // Don't regenerate if already generated
+    if (!story) return;
     
     setLoading(true);
     setError(null);
+    setFlow(null); // Reset flow when regenerating
     try {
       const response = await axios.post(`${API_URL}/api/v1/posts/summary/generate_story_flow`, {
-        story: story
+        story: story,
+        detail_level: selectedDetailLevel
       });
       setFlow(response.data.flow);
     } catch (err) {
@@ -28,15 +31,12 @@ function StoryFlow({ story }) {
   };
 
   useEffect(() => {
-    // Reset flow when story changes
+    // Reset flow when story or detail level changes
     setFlow(null);
     setError(null);
-  }, [story]);
+  }, [story, selectedDetailLevel]);
 
   const handleToggle = () => {
-    if (!isExpanded && !flow && !loading) {
-      generateFlow();
-    }
     setIsExpanded(!isExpanded);
   };
 
@@ -81,6 +81,38 @@ function StoryFlow({ story }) {
           padding: '16px',
           backgroundColor: '#1a1a1a'
         }}>
+          {/* Detail Level Selector */}
+          <div style={{ marginBottom: '16px' }}>
+            <label style={{ display: 'block', color: '#fff', marginBottom: '8px', fontSize: '14px' }}>
+              Detail Level:
+            </label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {['small', 'med', 'big'].map((level) => (
+                <button
+                  key={level}
+                  onClick={() => {
+                    setSelectedDetailLevel(level);
+                    setFlow(null); // Reset flow when changing detail level
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '8px',
+                    backgroundColor: selectedDetailLevel === level ? '#4CAF50' : '#333',
+                    color: '#fff',
+                    border: '1px solid #555',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: selectedDetailLevel === level ? 'bold' : 'normal',
+                    textTransform: 'capitalize'
+                  }}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {loading ? (
             <p style={{ color: '#aaa', textAlign: 'center', margin: 0 }}>
               Generating flow...
@@ -129,9 +161,27 @@ function StoryFlow({ story }) {
               </div>
             </div>
           ) : (
-            <p style={{ color: '#aaa', textAlign: 'center', margin: 0 }}>
-              Click to generate flow
-            </p>
+            <div>
+              <p style={{ color: '#aaa', textAlign: 'center', margin: '0 0 12px 0' }}>
+                Select detail level and click to generate flow
+              </p>
+              <button
+                onClick={generateFlow}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#2196F3',
+                  color: 'white',
+                  padding: '10px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold'
+                }}
+              >
+                Generate Flow
+              </button>
+            </div>
           )}
         </div>
       )}

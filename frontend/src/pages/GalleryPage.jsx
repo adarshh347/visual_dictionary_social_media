@@ -215,7 +215,7 @@ function GalleryPage() {
                                 <h4 style={{ color: '#FF9800', marginTop: 0, marginBottom: 0 }}>Generated Story</h4>
                               </div>
                               <p style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8', marginBottom: '0' }}>{generatedStory}</p>
-                              <StoryFlow story={generatedStory} />
+                              <StoryFlow story={generatedStory} detailLevel="med" />
                             </div>
                           )}
                         </div>
@@ -259,6 +259,7 @@ function GalleryPage() {
         onClose={() => setShowUntaggedSidebar(false)}
         onImageSelect={handleImageSelect}
         selectedTag={selectedTag}
+        story={generatedStory}
       />
     </div>
   );

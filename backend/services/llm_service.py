@@ -137,12 +137,24 @@ class LLMService:
             print(f"Error in LLM story generation: {e}")
             return {"story": "Error generating story."}
 
-    def generate_story_flow(self, story: str) -> dict:
+    def generate_story_flow(self, story: str, detail_level: str = "med") -> dict:
         """
         Generates a summarized flow of the story in phrases/keywords (ev1->ev2->ev3 format).
+        detail_level: "small" (3-5 events), "med" (5-10 events), "big" (10-15 events)
         """
         if not self.client:
             return {"flow": "LLM service is not configured (missing GROQ_API_KEY)."}
+
+        # Determine event count based on detail level
+        if detail_level == "small":
+            event_range = "3-5"
+            detail_instruction = "Keep it very concise, focusing only on the most critical moments."
+        elif detail_level == "big":
+            event_range = "10-15"
+            detail_instruction = "Include more nuanced details and sub-events to capture the full narrative arc."
+        else:  # med
+            event_range = "5-10"
+            detail_instruction = "Provide a balanced overview of key moments."
 
         prompt = f"""
         You are a story analyzer. Analyze the following story and break it down into a sequential flow of key events/phrases.
@@ -151,7 +163,8 @@ class LLMService:
         {story[:8000]}
 
         TASK:
-        Break down the story into 5-10 key events or phrases that represent the story's progression.
+        Break down the story into {event_range} key events or phrases that represent the story's progression.
+        {detail_instruction}
         Each event should be a brief phrase or keyword (2-5 words max).
         Format them as a sequential flow: ev1->ev2->ev3->ev4->...
 
@@ -187,5 +200,68 @@ class LLMService:
         except Exception as e:
             print(f"Error in LLM story flow generation: {e}")
             return {"flow": "Error generating story flow."}
+
+    def generate_post_suggestion(self, text_blocks: list, suggestion_type: str, user_commentary: str = "") -> dict:
+        """
+        Generates suggestions (short prose or story) based on existing text blocks.
+        suggestion_type: "short_prose" or "story"
+        """
+        if not self.client:
+            return {"suggestion": "LLM service is not configured (missing GROQ_API_KEY)."}
+
+        # Extract content from text blocks
+        content_text = "\n\n".join([block.get("content", "") for block in text_blocks if block.get("content")])
+        
+        if not content_text.strip():
+            return {"suggestion": "No text content available to generate suggestions."}
+
+        if suggestion_type == "short_prose":
+            task_instruction = "Write a short, elegant prose piece (2-3 paragraphs) that expands or refines the existing content. Focus on vivid imagery and concise storytelling."
+        else:  # story
+            task_instruction = "Write a longer, engaging story (4-6 paragraphs) that builds upon the existing content. Include character development, narrative arc, and compelling details."
+
+        prompt = f"""
+        You are a creative writer. Based on the following existing text blocks, generate new content.
+
+        EXISTING TEXT BLOCKS:
+        {content_text[:5000]}
+
+        USER COMMENTARY/INSTRUCTIONS:
+        {user_commentary if user_commentary else "No specific instructions provided."}
+
+        TASK:
+        {task_instruction}
+        The new content should complement and enhance the existing text, not simply repeat it.
+
+        OUTPUT FORMAT:
+        Return ONLY a valid JSON object with the following structure:
+        {{
+            "suggestion": "Your generated content here..."
+        }}
+        Do not include any markdown formatting (like ```json) or extra text outside the JSON object.
+        """
+
+        try:
+            chat_completion = self.client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a helpful assistant that outputs JSON."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
+                model=self.model,
+                response_format={"type": "json_object"},
+            )
+
+            response_content = chat_completion.choices[0].message.content
+            return json.loads(response_content)
+
+        except Exception as e:
+            print(f"Error in LLM post suggestion generation: {e}")
+            return {"suggestion": "Error generating suggestion."}
 
 llm_service = LLMService()

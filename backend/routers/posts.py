@@ -10,7 +10,7 @@ from bson.objectid  import ObjectId
 from bson.errors import InvalidId
 # shutil(high level file operations) vs os (low level file operations)
 import shutil
-from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, StoryFlowRequest
+from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, AddTagAndStoryRequest, StoryFlowRequest, PostSuggestionRequest
 
 from backend.database import post_collection,client
 import cloudinary
@@ -207,10 +207,30 @@ async def delete_post(post_id: str):
 
 
 @router.get("/tags/", response_model=List[str])
-
 async def get_all_unique_tags():
     tags = await post_collection.distinct("general_tags")
     return tags
+
+@router.get("/tags/popular", response_model=List[str])
+async def get_popular_tags(limit: int = 10):
+    """
+    Returns the most popular tags (tags that appear in the most posts).
+    """
+    # Aggregate to count tag occurrences
+    pipeline = [
+        {"$unwind": "$general_tags"},  # Flatten the tags array
+        {"$group": {"_id": "$general_tags", "count": {"$sum": 1}}},  # Count occurrences
+        {"$sort": {"count": -1}},  # Sort by count descending
+        {"$limit": limit},  # Limit to top N tags
+        {"$project": {"_id": 0, "tag": "$_id"}}  # Rename _id to tag
+    ]
+    
+    popular_tags = []
+    async for doc in post_collection.aggregate(pipeline):
+        if doc.get("tag"):
+            popular_tags.append(doc["tag"])
+    
+    return popular_tags
 
 
 @router.get("/highlights", response_model=List[Post])
@@ -363,10 +383,81 @@ async def add_tag_to_post(post_id: str, request: AddTagRequest):
     
     raise HTTPException(status_code=500, detail="Failed to update post")
 
+@router.patch("/{post_id}/add-tag-and-story", response_model=Post)
+async def add_tag_and_story_to_post(post_id: str, request: AddTagAndStoryRequest):
+    """
+    Adds a tag to a post's general_tags list AND adds the story as a text block.
+    If the tag already exists, it still adds the story.
+    """
+    try:
+        obj_id = ObjectId(post_id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid ObjectId format")
+    
+    # Get the current post
+    post = await post_collection.find_one({"_id": obj_id})
+    if not post:
+        raise HTTPException(status_code=404, detail=f"Post with id {post_id} not found")
+    
+    # Get current tags or initialize empty list
+    current_tags = post.get("general_tags", []) or []
+    
+    # Add tag if it doesn't exist
+    if request.tag not in current_tags:
+        current_tags.append(request.tag)
+    
+    # Get current text blocks or initialize empty list
+    current_text_blocks = post.get("text_blocks", []) or []
+    
+    # Create a new text block for the story
+    # Use 'paragraph' type for the story, or you could use a custom type like 'story'
+    new_story_block = {
+        "id": f"block_{uuid.uuid4()}",
+        "type": "paragraph",
+        "content": request.story,
+        "color": None
+    }
+    
+    # Add the story block to the text blocks
+    current_text_blocks.append(new_story_block)
+    
+    # Update the post with both tag and story
+    update_data = {
+        "general_tags": current_tags,
+        "text_blocks": current_text_blocks,
+        "updated_at": datetime.now(timezone.utc)
+    }
+    
+    result = await post_collection.update_one(
+        {"_id": obj_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 1 or result.matched_count == 1:
+        updated_post = await post_collection.find_one({"_id": obj_id})
+        return post_helper(updated_post)
+    
+    raise HTTPException(status_code=500, detail="Failed to update post")
+
 @router.post("/summary/generate_story_flow")
 async def generate_story_flow(request: StoryFlowRequest):
     """
     Generates a summarized flow of the story in phrases/keywords (ev1->ev2->ev3 format).
+    detail_level: "small" (3-5 events), "med" (5-10 events), "big" (10-15 events)
     """
-    result = llm_service.generate_story_flow(request.story)
+    result = llm_service.generate_story_flow(request.story, request.detail_level)
+    return result
+
+@router.post("/suggestions/generate")
+async def generate_post_suggestion(request: PostSuggestionRequest):
+    """
+    Generates suggestions (short prose or story) based on existing text blocks.
+    """
+    # Convert Pydantic models to dict for LLM service
+    text_blocks_dict = [block.dict() for block in request.text_blocks]
+    result = llm_service.generate_post_suggestion(
+        text_blocks=text_blocks_dict,
+        suggestion_type=request.suggestion_type,
+        user_commentary=request.user_commentary or ""
+    )
     return result

@@ -5,6 +5,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import BoundingBoxEditor from './BoundingBoxEditor';
 import RichTextBlock from './RichTextBlock';
+import PostSuggestionPanel from './PostSuggestionPanel';
+import StoryFlow from './StoryFlow';
 
 // Using a hardcoded URL as requested
 const API_URL = 'http://127.0.0.1:5007';
@@ -18,6 +20,8 @@ function PostDetailPage() {
   const [editedBlocks, setEditedBlocks] = useState([]);
   const [editedTags, setEditedTags] = useState([]);
   const [currentTagInput, setCurrentTagInput] = useState(''); // <-- State for the tag input field
+  const [popularTags, setPopularTags] = useState([]);
+  const [loadingPopularTags, setLoadingPopularTags] = useState(false);
 
   // --- Fetches the latest post data from the backend ---
   const fetchPost = async () => {
@@ -32,9 +36,23 @@ function PostDetailPage() {
     }
   };
 
+  // Fetch popular tags
+  const fetchPopularTags = async () => {
+    setLoadingPopularTags(true);
+    try {
+      const response = await axios.get(`${API_URL}/api/v1/posts/tags/popular?limit=10`);
+      setPopularTags(response.data);
+    } catch (error) {
+      console.error("Error fetching popular tags:", error);
+    } finally {
+      setLoadingPopularTags(false);
+    }
+  };
+
   // Run fetchPost once when the component loads
   useEffect(() => {
     fetchPost();
+    fetchPopularTags();
   }, [postId]);
 
   // --- Saves the updated text blocks AND tags to the backend ---
@@ -101,6 +119,23 @@ function PostDetailPage() {
     setEditedTags(editedTags.filter(tag => tag !== tagToRemove));
   };
 
+  const handleAddPopularTag = (tag) => {
+    if (!editedTags.includes(tag)) {
+      setEditedTags([...editedTags, tag]);
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion) => {
+    // Add the suggestion as a new text block
+    const newBlock = {
+      id: `block_${Date.now()}`,
+      type: 'paragraph',
+      content: suggestion,
+      color: '#2a2a2a'
+    };
+    setEditedBlocks([...editedBlocks, newBlock]);
+  };
+
   const handleTagInputKeyDown = (event) => {
     // Add tag on Enter or Comma key press
     if (event.key === 'Enter' || event.key === ',') {
@@ -146,6 +181,14 @@ function PostDetailPage() {
 
               <hr />
 
+              {/* LLM Suggestion Panel */}
+              <PostSuggestionPanel
+                textBlocks={editedBlocks}
+                onSuggestionSelect={handleSuggestionSelect}
+              />
+
+              <hr />
+
               {/* --- NEW Tag Editing UI --- */}
               <h3>Edit General Tags</h3>
               <div className="tags-editor">
@@ -157,6 +200,40 @@ function PostDetailPage() {
                           </span>
                       ))}
                   </div>
+                  
+                  {/* Popular Tags */}
+                  {popularTags.length > 0 && (
+                    <div style={{ marginBottom: '12px' }}>
+                      <label style={{ display: 'block', color: '#fff', marginBottom: '8px', fontSize: '14px' }}>
+                        Popular Tags (click to add):
+                      </label>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {popularTags
+                          .filter(tag => !editedTags.includes(tag))
+                          .map(tag => (
+                            <button
+                              key={tag}
+                              onClick={() => handleAddPopularTag(tag)}
+                              style={{
+                                padding: '6px 12px',
+                                backgroundColor: '#2196F3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                transition: 'background-color 0.2s'
+                              }}
+                              onMouseEnter={(e) => e.target.style.backgroundColor = '#1976D2'}
+                              onMouseLeave={(e) => e.target.style.backgroundColor = '#2196F3'}
+                            >
+                              + {tag}
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="add-tag-input-group">
                     <input
                       type="text"
@@ -194,6 +271,15 @@ function PostDetailPage() {
                   }}
                 />
               ))}
+              
+              {/* Story Flow for individual post */}
+              {post.text_blocks && post.text_blocks.length > 0 && (
+                <StoryFlow 
+                  story={post.text_blocks.map(b => b.content).join('\n\n')} 
+                  detailLevel="med" 
+                />
+              )}
+
               <button onClick={() => {
                   setIsEditing(true);
                   // Ensure edit state starts with current data

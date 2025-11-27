@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const API_URL = 'http://127.0.0.1:5007';
 
-function UntaggedImagesSidebar({ isVisible, onClose, onImageSelect, selectedTag }) {
+function UntaggedImagesSidebar({ isVisible, onClose, onImageSelect, selectedTag, story }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -28,12 +28,13 @@ function UntaggedImagesSidebar({ isVisible, onClose, onImageSelect, selectedTag 
   }, [isVisible]);
 
   const handleImageClick = async (image) => {
-    if (!selectedTag) return;
+    if (!selectedTag || !story) return;
     
     try {
-      // Add the tag to the selected image
-      await axios.patch(`${API_URL}/api/v1/posts/${image.id}/add-tag`, {
-        tag: selectedTag
+      // Add both the tag and the story to the selected image
+      await axios.patch(`${API_URL}/api/v1/posts/${image.id}/add-tag-and-story`, {
+        tag: selectedTag,
+        story: story
       });
       
       // Call the callback to shift story to this image
@@ -44,7 +45,7 @@ function UntaggedImagesSidebar({ isVisible, onClose, onImageSelect, selectedTag 
       // Refresh the images list
       fetchRandomUntaggedImages();
     } catch (error) {
-      console.error("Error adding tag to image:", error);
+      console.error("Error adding tag and story to image:", error);
       alert("Failed to associate story with image. Please try again.");
     }
   };
@@ -164,7 +165,7 @@ function UntaggedImagesSidebar({ isVisible, onClose, onImageSelect, selectedTag 
                       color: '#aaa',
                       textAlign: 'center'
                     }}>
-                      Click to tag with "{selectedTag}"
+                      Click to add story & tag "{selectedTag}"
                     </div>
                   </div>
                 ))}
