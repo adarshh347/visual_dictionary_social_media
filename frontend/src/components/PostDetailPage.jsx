@@ -9,7 +9,7 @@ import PostSuggestionPanel from './PostSuggestionPanel';
 import StoryFlow from './StoryFlow';
 
 // Using a hardcoded URL as requested
-const API_URL = 'http://127.0.0.1:5007';
+import { API_URL } from '../config/api';
 
 function PostDetailPage() {
   const [post, setPost] = useState(null);

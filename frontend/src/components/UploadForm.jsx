@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:5007';
+import { API_URL } from '../config/api';
 
 // This component will receive a function 'onUploadSuccess' from its parent
 function UploadForm({ onUploadSuccess }) {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 // NOTE: Ensure your API_URL is correct
-const API_URL = 'http://127.0.0.1:5007';
+import { API_URL } from '../config/api';
 
 function BoundingBoxEditor({ post, onUpdate }) {
   const [isDrawing, setIsDrawing] = useState(false);

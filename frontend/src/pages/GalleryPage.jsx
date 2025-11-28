@@ -6,7 +6,7 @@ import TagFilter from '../components/TagFilter';
 import UntaggedImagesSidebar from '../components/UntaggedImagesSidebar';
 import StoryFlow from '../components/StoryFlow';
 
-const API_URL = 'http://127.0.0.1:5007';
+import { API_URL } from '../config/api';
 
 function GalleryPage() {
   const [posts, setPosts] = useState([]);
