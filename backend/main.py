@@ -15,6 +15,7 @@ origins = [
     "https://sharirasutra.onrender.com",
     "http://localhost:3000",
     "http://localhost:5000",
+    "https://sharirasutra-rae3yyibx-huih-huis-projects.vercel.app",
 ]
 
 
