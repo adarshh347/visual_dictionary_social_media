@@ -413,4 +413,173 @@ class LLMService:
             print(f"Error in story completion: {e}")
             return {"continuation": "Error generating story continuation."}
 
+    def chat_with_vision(self, image_url: str, text_blocks: list, user_message: str, conversation_history: list = None) -> dict:
+        """
+        Vision-enabled chat that can see the image and understand context.
+        Uses Llama 4 Maverick for vision capabilities.
+        
+        Args:
+            image_url: URL of the image to analyze
+            text_blocks: Existing text blocks for context
+            user_message: User's chat message
+            conversation_history: Previous messages in the conversation
+            
+        Returns:
+            Dictionary with 'response' key containing the AI response
+        """
+        if not self.client:
+            return {"response": "LLM service is not configured (missing GROQ_API_KEY)."}
+
+        # Build context from text blocks
+        blocks_context = "\n\n".join([
+            f"[{block.get('type', 'paragraph')}]: {block.get('content', '')}" 
+            for block in text_blocks if block.get('content')
+        ]) if text_blocks else "No existing text blocks."
+
+        # Build conversation context
+        conv_context = ""
+        if conversation_history:
+            for msg in conversation_history[-10:]:  # Last 10 messages
+                role = "User" if msg.get("role") == "user" else "Assistant"
+                conv_context += f"{role}: {msg.get('content', '')}\n"
+
+        system_prompt = """You are a creative writing assistant with vision capabilities. 
+You can see the image being referenced and help the user write, edit, and enhance their text content.
+Your responses should be:
+- Contextually aware of both the image and existing text
+- Creative and engaging
+- Helpful for storytelling and prose writing
+- Synchronized with what's visible in the image
+
+When the user asks you to write or suggest content, make sure it relates to what's visible in the image."""
+
+        messages = [
+            {"role": "system", "content": system_prompt}
+        ]
+
+        # Main user message with image and context
+        user_content = [
+            {
+                "type": "image_url",
+                "image_url": {"url": image_url}
+            },
+            {
+                "type": "text", 
+                "text": f"""IMAGE CONTEXT: I'm sharing an image with you.
+
+EXISTING TEXT BLOCKS:
+{blocks_context}
+
+CONVERSATION SO FAR:
+{conv_context}
+
+USER MESSAGE: {user_message}
+
+Please respond helpfully, considering both the image and the existing text context."""
+            }
+        ]
+
+        messages.append({"role": "user", "content": user_content})
+
+        try:
+            chat_completion = self.client.chat.completions.create(
+                messages=messages,
+                model="meta-llama/llama-4-maverick-17b-128e-instruct",  # Llama 4 Maverick vision model
+                max_tokens=2000,
+                temperature=0.7,
+            )
+
+            response_content = chat_completion.choices[0].message.content
+            return {"response": response_content}
+
+        except Exception as e:
+            print(f"Error in vision chat: {e}")
+            # Fallback to text-only model
+            return self._fallback_text_chat(blocks_context, user_message, conv_context)
+
+    def _fallback_text_chat(self, blocks_context: str, user_message: str, conv_context: str) -> dict:
+        """Fallback to text-only chat if vision fails."""
+        try:
+            prompt = f"""EXISTING TEXT BLOCKS:
+{blocks_context}
+
+CONVERSATION SO FAR:
+{conv_context}
+
+USER MESSAGE: {user_message}
+
+Please respond helpfully based on the text context provided."""
+
+            chat_completion = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "You are a creative writing assistant helping with prose and storytelling."},
+                    {"role": "user", "content": prompt}
+                ],
+                model=self.model,
+                max_tokens=2000,
+            )
+
+            return {"response": chat_completion.choices[0].message.content}
+        except Exception as e:
+            print(f"Error in fallback chat: {e}")
+            return {"response": "Sorry, I encountered an error. Please try again."}
+
+    def rewrite_with_vision(self, image_url: str, block_content: str, rewrite_instruction: str = "") -> dict:
+        """
+        Rewrites a text block with awareness of the image content.
+        
+        Args:
+            image_url: URL of the image
+            block_content: Current content of the block to rewrite
+            rewrite_instruction: Optional specific instructions for rewriting
+            
+        Returns:
+            Dictionary with 'rewritten' key containing the new text
+        """
+        if not self.client:
+            return {"rewritten": "LLM service is not configured (missing GROQ_API_KEY)."}
+
+        instruction = rewrite_instruction if rewrite_instruction else "Enhance and improve this text while keeping it synchronized with what's visible in the image."
+
+        user_content = [
+            {
+                "type": "image_url",
+                "image_url": {"url": image_url}
+            },
+            {
+                "type": "text",
+                "text": f"""Look at this image carefully.
+
+CURRENT TEXT:
+{block_content}
+
+INSTRUCTION: {instruction}
+
+Rewrite the text to better describe, relate to, or complement what's visible in the image.
+Keep the same general length but improve the quality, imagery, and connection to the visual.
+
+OUTPUT FORMAT:
+Return ONLY a valid JSON object:
+{{"rewritten": "Your rewritten text here..."}}"""
+            }
+        ]
+
+        try:
+            chat_completion = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "You are a creative rewriting assistant with vision capabilities. You output JSON."},
+                    {"role": "user", "content": user_content}
+                ],
+                model="meta-llama/llama-4-maverick-17b-128e-instruct",
+                max_tokens=1500,
+                response_format={"type": "json_object"},
+            )
+
+            response_content = chat_completion.choices[0].message.content
+            return json.loads(response_content)
+
+        except Exception as e:
+            print(f"Error in vision rewrite: {e}")
+            return {"rewritten": block_content}  # Return original on error
+
 llm_service = LLMService()
