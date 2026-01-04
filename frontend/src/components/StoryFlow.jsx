@@ -12,10 +12,10 @@ function StoryFlow({ story, detailLevel = 'med' }) {
 
   const generateFlow = async () => {
     if (!story) return;
-    
+
     setLoading(true);
     setError(null);
-    setFlow(null); // Reset flow when regenerating
+    setFlow(null);
     try {
       const response = await axios.post(`${API_URL}/api/v1/posts/summary/generate_story_flow`, {
         story: story,
@@ -31,7 +31,6 @@ function StoryFlow({ story, detailLevel = 'med' }) {
   };
 
   useEffect(() => {
-    // Reset flow when story or detail level changes
     setFlow(null);
     setError(null);
   }, [story, selectedDetailLevel]);
@@ -92,7 +91,7 @@ function StoryFlow({ story, detailLevel = 'med' }) {
                   key={level}
                   onClick={() => {
                     setSelectedDetailLevel(level);
-                    setFlow(null); // Reset flow when changing detail level
+                    setFlow(null);
                   }}
                   style={{
                     flex: 1,
@@ -190,4 +189,3 @@ function StoryFlow({ story, detailLevel = 'med' }) {
 }
 
 export default StoryFlow;
-
