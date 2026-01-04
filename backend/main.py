@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.routers import posts
+from backend.routers import posts, epics, phrases
 from backend.routers.posts import test_connection, post_helper
 from backend.database import post_collection
 from backend.schemas.post import PaginatedPosts
@@ -75,6 +75,8 @@ async def get_posts_with_text_main(page: int = 1, limit: int = 50):
 # Include routers
 app.include_router(posts.router, prefix="/api/v1/posts", tags=["Posts"])
 app.include_router(posts.text_posts_router, prefix="/api/v1/posts", tags=["Posts Text"])
+app.include_router(epics.router, prefix="/api/v1/epics", tags=["Epics"])
+app.include_router(phrases.router)
 
 # Health check endpoint for Render
 @app.get("/health")

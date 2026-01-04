@@ -49,6 +49,8 @@ except Exception as e:
 # theory imp: clusters and database are different
 database = client.visualDictionaryDB
 post_collection = database.get_collection("posts")
+epic_collection = database.get_collection("epics")
+phrase_learning_collection = database.get_collection("phrase_learning")
 
 # --- Connection Test Function ---
 async def ping_server():
