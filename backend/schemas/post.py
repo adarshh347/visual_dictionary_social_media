@@ -17,6 +17,9 @@ class TextBlock(BaseModel):
     content: str
     color: Optional[str] = None
 
+class EpicRef(BaseModel):
+    epic_id: str
+    title: str
 
 # main schema for post object, used for response
 class Post(BaseModel):
@@ -27,7 +30,7 @@ class Post(BaseModel):
     text_blocks:List[TextBlock] = []
     bounding_box_tags : Optional[dict[str, BoundingBox]] = None
     general_tags : Optional[List[str]] = None
-
+    associated_epics: Optional[List[EpicRef]] = []
 
 class PostUpdate(BaseModel):
     text_blocks: Optional[List[TextBlock]] = None

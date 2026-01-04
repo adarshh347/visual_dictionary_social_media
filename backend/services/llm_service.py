@@ -12,7 +12,7 @@ class LLMService:
             print("Warning: GROQ_API_KEY not found in settings. LLM features will be disabled.")
             
         # Model can be easily switched here
-        self.model = "openai/gpt-oss-120b" 
+        self.model = "openai/gpt-oss-120b"
 
     def generate_summary_and_plots(self, text_content: str) -> dict:
         """
@@ -263,5 +263,154 @@ class LLMService:
         except Exception as e:
             print(f"Error in LLM post suggestion generation: {e}")
             return {"suggestion": "Error generating suggestion."}
+
+    def generate_epic_story(self, aggregated_text: str, generation_prompt: str, user_commentary: str = "", source_tags: list = None) -> dict:
+        """
+        Generates a long-form epic story based on aggregated text from posts.
+        This is specifically for the Epic/Novel feature.
+        
+        Args:
+            aggregated_text: Combined text from selected posts
+            generation_prompt: Main prompt/direction for the story
+            user_commentary: Additional user input/direction
+            source_tags: Tags used to source the content
+            
+        Returns:
+            Dictionary with 'story' key containing the generated epic
+        """
+        if not self.client:
+            return {"story": "LLM service is not configured (missing GROQ_API_KEY)."}
+
+        tag_context = f"Source tags: {', '.join(source_tags)}" if source_tags else "No specific tags"
+        
+        prompt = f"""
+        You are a master storyteller creating an epic, long-form narrative.
+        
+        CONTEXT FROM EXISTING CONTENT:
+        {aggregated_text[:8000]}
+        
+        {tag_context}
+        
+        STORY DIRECTION/PROMPT:
+        {generation_prompt}
+        
+        USER'S ADDITIONAL COMMENTARY:
+        {user_commentary if user_commentary else "No additional commentary"}
+        
+        TASK:
+        Create a rich, engaging epic story that:
+        1. Draws inspiration from the existing content context
+        2. Follows the story direction/prompt provided
+        3. Incorporates the user's commentary and preferences
+        4. Is substantial in length (1500-3000 words)
+        5. Has clear narrative structure with beginning, development, and conclusion
+        6. Uses vivid, literary language and compelling storytelling
+        7. Can be naturally divided into 4-8 coherent sections/chapters
+        
+        The story should feel complete yet leave room for visual interpretation
+        (as images will be paired with sections of this story).
+        
+        OUTPUT FORMAT:
+        Return ONLY a valid JSON object with the following structure:
+        {{
+            "story": "Your epic story here...",
+            "title_suggestion": "Suggested title for the epic",
+            "themes": ["theme1", "theme2", "theme3"]
+        }}
+        """
+
+        try:
+            chat_completion = self.client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a master storyteller specializing in epic, literary narratives. You output JSON."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
+                model=self.model,
+                response_format={"type": "json_object"},
+                temperature=0.8,  # Higher creativity for epic stories
+            )
+
+            response_content = chat_completion.choices[0].message.content
+            return json.loads(response_content)
+
+        except Exception as e:
+            print(f"Error in epic story generation: {e}")
+            return {
+                "story": "Error generating epic story.",
+                "title_suggestion": "Untitled Epic",
+                "themes": []
+            }
+
+    def complete_epic_story(self, existing_story: str, continuation_prompt: str, user_commentary: str = "") -> dict:
+        """
+        Continues/completes an existing epic story.
+        
+        Args:
+            existing_story: The story so far
+            continuation_prompt: Direction for how to continue
+            user_commentary: Additional user guidance
+            
+        Returns:
+            Dictionary with 'continuation' key containing the new content
+        """
+        if not self.client:
+            return {"continuation": "LLM service is not configured (missing GROQ_API_KEY)."}
+
+        prompt = f"""
+        You are continuing an epic story. Here is the story so far:
+        
+        EXISTING STORY:
+        {existing_story[:8000]}
+        
+        CONTINUATION DIRECTION:
+        {continuation_prompt}
+        
+        USER'S COMMENTARY:
+        {user_commentary if user_commentary else "No additional commentary"}
+        
+        TASK:
+        Write a compelling continuation that:
+        1. Maintains consistency with the existing story's tone, style, and narrative
+        2. Follows the continuation direction provided
+        3. Adds substantial new content (800-1500 words)
+        4. Advances the plot meaningfully
+        5. Can stand as coherent sections when paired with images
+        
+        OUTPUT FORMAT:
+        Return ONLY a valid JSON object:
+        {{
+            "continuation": "Your continuation text here..."
+        }}
+        """
+
+        try:
+            chat_completion = self.client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a master storyteller continuing an epic narrative. You output JSON."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
+                model=self.model,
+                response_format={"type": "json_object"},
+                temperature=0.8,
+            )
+
+            response_content = chat_completion.choices[0].message.content
+            return json.loads(response_content)
+
+        except Exception as e:
+            print(f"Error in story completion: {e}")
+            return {"continuation": "Error generating story continuation."}
 
 llm_service = LLMService()

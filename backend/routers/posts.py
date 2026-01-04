@@ -63,6 +63,7 @@ def post_helper(post) -> dict:
         "text_blocks": post.get("text_blocks", []), # Fallback to an empty list
         "bounding_box_tags": post.get("bounding_box_tags", {}), # Fallback to an empty dict
         "general_tags": post.get("general_tags", []), # Fallback to an empty list
+        "associated_epics": post.get("associated_epics", []), # Fallback to an empty list
     }
 
 
