@@ -431,10 +431,15 @@ class LLMService:
             return {"response": "LLM service is not configured (missing GROQ_API_KEY)."}
 
         # Build context from text blocks
-        blocks_context = "\n\n".join([
-            f"[{block.get('type', 'paragraph')}]: {block.get('content', '')}" 
-            for block in text_blocks if block.get('content')
-        ]) if text_blocks else "No existing text blocks."
+        if text_blocks and len(text_blocks) > 0:
+            blocks_context = "\n\n".join([
+                f"[{block.get('type', 'paragraph')}]: {block.get('content', '')}" 
+                for block in text_blocks if block.get('content')
+            ])
+            context_instruction = "EXISTING TEXT BLOCKS (Use these for context, but prioritize image visuals if they conflict):"
+        else:
+            blocks_context = "No written content yet. Start fresh based on the image."
+            context_instruction = "CONTEXT: The user hasn't written anything yet. Rely heavily on the visual details in the image."
 
         # Build conversation context
         conv_context = ""
@@ -445,13 +450,18 @@ class LLMService:
 
         system_prompt = """You are a creative writing assistant with vision capabilities. 
 You can see the image being referenced and help the user write, edit, and enhance their text content.
+
+CRITICAL INSTRUCTIONS:
+1. FOCUS ON THE IMAGE: Use the visual details to ground your writing.
+2. NO REPETITION: Do not repeat words like "Page" or "Image" pointlessly.
+3. BE CONCISE & HELPUL: Avoid fluff. Go straight to the prose or answer.
+4. NO OCR ARTIFACTS: Do not output random page numbers or footer text.
+
 Your responses should be:
 - Contextually aware of both the image and existing text
 - Creative and engaging
 - Helpful for storytelling and prose writing
-- Synchronized with what's visible in the image
-
-When the user asks you to write or suggest content, make sure it relates to what's visible in the image."""
+- Synchronized with what's visible in the image"""
 
         messages = [
             {"role": "system", "content": system_prompt}
@@ -467,7 +477,7 @@ When the user asks you to write or suggest content, make sure it relates to what
                 "type": "text", 
                 "text": f"""IMAGE CONTEXT: I'm sharing an image with you.
 
-EXISTING TEXT BLOCKS:
+{context_instruction}
 {blocks_context}
 
 CONVERSATION SO FAR:
@@ -475,7 +485,7 @@ CONVERSATION SO FAR:
 
 USER MESSAGE: {user_message}
 
-Please respond helpfully, considering both the image and the existing text context."""
+Please respond helpfully. If I asked for a story or description, write it clearly without repeating yourself."""
             }
         ]
 
