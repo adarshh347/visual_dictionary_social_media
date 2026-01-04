@@ -1,28 +1,170 @@
 /* frontend/src/components/Navbar.css */
+/* Clean, minimal navbar - matches white landing page */
+
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 5%;
-  background-color: #1e1e1e;
-  border-bottom: 1px solid #333;
+  padding: 0 clamp(2rem, 6vw, 8rem);
+  height: 64px;
+  background: transparent;
+  position: relative;
+  z-index: 100;
 }
 
+/* For dark pages */
+.navbar--dark {
+  background: #1a1a1a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Logo */
 .nav-logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0a0a0a;
   text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s ease;
 }
 
+.nav-logo:hover {
+  opacity: 0.7;
+}
+
+/* Dark mode logo */
+.navbar--dark .nav-logo {
+  color: #fff;
+}
+
+/* Navigation links container */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+/* Individual nav links */
 .nav-links a {
-  color: #ccc;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #666;
   text-decoration: none;
-  margin-left: 1.5rem;
-  transition: color 0.2s;
+  letter-spacing: 0.03em;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: color 0.2s ease;
 }
 
-.nav-links a:hover,
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #0a0a0a;
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: #0a0a0a;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
 .nav-links a.active {
+  color: #0a0a0a;
+}
+
+.nav-links a.active::after {
+  width: 100%;
+}
+
+/* Dark mode nav links */
+.navbar--dark .nav-links a {
+  color: #999;
+}
+
+.navbar--dark .nav-links a::after {
+  background: #fff;
+}
+
+.navbar--dark .nav-links a:hover,
+.navbar--dark .nav-links a.active {
   color: #fff;
+}
+
+/* Optional: Superscript count */
+.nav-count {
+  font-size: 0.6rem;
+  color: #999;
+  vertical-align: super;
+  margin-left: 0.2rem;
+}
+
+/* Mobile menu toggle (hidden by default) */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #0a0a0a;
+  margin: 4px 0;
+  transition: all 0.3s ease;
+}
+
+.navbar--dark .nav-toggle span {
+  background: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1.5rem;
+  }
+
+  .nav-toggle {
+    display: block;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    background: #fafafa;
+    flex-direction: column;
+    padding: 2rem;
+    gap: 1.5rem;
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .nav-links.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .navbar--dark .nav-links {
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+  }
+
+  .nav-links a {
+    font-size: 1rem;
+  }
 }

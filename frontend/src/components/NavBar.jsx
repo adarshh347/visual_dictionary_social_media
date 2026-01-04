@@ -1,10 +1,13 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
 function Navbar() {
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/';
+
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${isLandingPage ? '' : 'navbar--dark'}`}>
       <NavLink to="/" className="nav-logo">
         Framewise
       </NavLink>
