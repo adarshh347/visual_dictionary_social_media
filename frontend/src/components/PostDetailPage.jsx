@@ -99,7 +99,7 @@ function PostDetailPage() {
   };
   const addBlock = (type = 'paragraph') => {
     // ... (addBlock logic remains the same)
-    const newBlock = { id: `block_${Date.now()}`, type, content: '', color: '#2a2a2a'};
+    const newBlock = { id: `block_${Date.now()}`, type, content: '', color: '#2a2a2a' };
     setEditedBlocks(currentBlocks => [...currentBlocks, newBlock]);
   };
   const deleteBlock = (id) => {
@@ -192,58 +192,58 @@ function PostDetailPage() {
               {/* --- NEW Tag Editing UI --- */}
               <h3>Edit General Tags</h3>
               <div className="tags-editor">
-                  <div className="tag-pills-container">
-                      {editedTags.map(tag => (
-                          <span key={tag} className="tag-pill editable">
-                              {tag}
-                              <button onClick={() => handleRemoveTag(tag)}>&times;</button>
-                          </span>
-                      ))}
-                  </div>
-                  
-                  {/* Popular Tags */}
-                  {popularTags.length > 0 && (
-                    <div style={{ marginBottom: '12px' }}>
-                      <label style={{ display: 'block', color: '#fff', marginBottom: '8px', fontSize: '14px' }}>
-                        Popular Tags (click to add):
-                      </label>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        {popularTags
-                          .filter(tag => !editedTags.includes(tag))
-                          .map(tag => (
-                            <button
-                              key={tag}
-                              onClick={() => handleAddPopularTag(tag)}
-                              style={{
-                                padding: '6px 12px',
-                                backgroundColor: '#2196F3',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                transition: 'background-color 0.2s'
-                              }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = '#1976D2'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = '#2196F3'}
-                            >
-                              + {tag}
-                            </button>
-                          ))}
-                      </div>
-                    </div>
-                  )}
+                <div className="tag-pills-container">
+                  {editedTags.map(tag => (
+                    <span key={tag} className="tag-pill editable">
+                      {tag}
+                      <button onClick={() => handleRemoveTag(tag)}>&times;</button>
+                    </span>
+                  ))}
+                </div>
 
-                  <div className="add-tag-input-group">
-                    <input
-                      type="text"
-                      placeholder="Add a tag..."
-                      value={currentTagInput}
-                      onChange={(e) => setCurrentTagInput(e.target.value)}
-                      onKeyDown={handleTagInputKeyDown} // Add tag on Enter/Comma
-                    />
-                    <button onClick={handleAddTag}>Add</button>
+                {/* Popular Tags */}
+                {popularTags.length > 0 && (
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', color: '#fff', marginBottom: '8px', fontSize: '14px' }}>
+                      Popular Tags (click to add):
+                    </label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {popularTags
+                        .filter(tag => !editedTags.includes(tag))
+                        .map(tag => (
+                          <button
+                            key={tag}
+                            onClick={() => handleAddPopularTag(tag)}
+                            style={{
+                              padding: '6px 12px',
+                              backgroundColor: '#2196F3',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#1976D2'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#2196F3'}
+                          >
+                            + {tag}
+                          </button>
+                        ))}
+                    </div>
                   </div>
+                )}
+
+                <div className="add-tag-input-group">
+                  <input
+                    type="text"
+                    placeholder="Add a tag..."
+                    value={currentTagInput}
+                    onChange={(e) => setCurrentTagInput(e.target.value)}
+                    onKeyDown={handleTagInputKeyDown} // Add tag on Enter/Comma
+                  />
+                  <button onClick={handleAddTag}>Add</button>
+                </div>
               </div>
               {/* ------------------------ */}
 
@@ -259,32 +259,44 @@ function PostDetailPage() {
           ) : (
             // --- Display Mode ---
             <div>
+              {/* Epic Association */}
+              {post.associated_epics && post.associated_epics.length > 0 && (
+                <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: '#1e293b', borderRadius: '8px', border: '1px solid #334155' }}>
+                  <h3 style={{ marginTop: 0, color: '#94a3b8', fontSize: '0.9rem', textTransform: 'uppercase' }}>Part of Epic</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {post.associated_epics.map(epic => (
+                      <Link to={`/epics/${epic.epic_id}`} key={epic.epic_id} style={{ color: '#fff', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span>📖</span> {epic.title}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {(post.text_blocks || []).map((block) => (
                 <div
                   key={block.id}
+                  className="text-block-display"
                   dangerouslySetInnerHTML={{ __html: block.content }}
                   style={{
-                    backgroundColor: block.color || 'transparent',
-                    padding: '1rem',
-                    borderRadius: '8px',
-                    marginBottom: '1rem'
+                    color: block.color && block.color !== '#2a2a2a' ? block.color : 'inherit'
                   }}
                 />
               ))}
-              
+
               {/* Story Flow for individual post */}
               {post.text_blocks && post.text_blocks.length > 0 && (
-                <StoryFlow 
-                  story={post.text_blocks.map(b => b.content).join('\n\n')} 
-                  detailLevel="med" 
+                <StoryFlow
+                  story={post.text_blocks.map(b => b.content).join('\n\n')}
+                  detailLevel="med"
                 />
               )}
 
               <button onClick={() => {
-                  setIsEditing(true);
-                  // Ensure edit state starts with current data
-                  setEditedBlocks(post.text_blocks || []);
-                  setEditedTags(post.general_tags || []);
+                setIsEditing(true);
+                // Ensure edit state starts with current data
+                setEditedBlocks(post.text_blocks || []);
+                setEditedTags(post.general_tags || []);
               }} style={{ marginTop: '1rem' }}>Edit Post</button>
 
               <hr />
@@ -292,7 +304,7 @@ function PostDetailPage() {
               <h2>General Tags</h2>
               <ul className="tag-pills-container display-mode"> {/* Use container class for display too */}
                 {(post.general_tags || []).map((tag) => (
-                   <li key={tag} className="tag-pill">{tag}</li>
+                  <li key={tag} className="tag-pill">{tag}</li>
                 ))}
               </ul>
             </div>

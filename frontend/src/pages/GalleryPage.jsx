@@ -5,6 +5,7 @@ import UploadForm from '../components/UploadForm';
 import TagFilter from '../components/TagFilter';
 import UntaggedImagesSidebar from '../components/UntaggedImagesSidebar';
 import StoryFlow from '../components/StoryFlow';
+import PhraseGenerator from '../components/PhraseGenerator';
 
 import { API_URL } from '../config/api';
 
@@ -42,8 +43,8 @@ function GalleryPage() {
     if (!selectedTag) return;
     setLoadingSummary(true);
     setSummaryData(null);
-    setActivePlotIndex(null); // Reset active plot
-    setGeneratedStory(null); // Reset story
+    setActivePlotIndex(null);
+    setGeneratedStory(null);
     try {
       const response = await axios.get(`${API_URL}/api/v1/posts/summary/${selectedTag}`);
       setSummaryData(response.data);
@@ -58,7 +59,7 @@ function GalleryPage() {
   const handleGenerateStory = async (plotSuggestion) => {
     setLoadingStory(true);
     setGeneratedStory(null);
-    setShowUntaggedSidebar(false); // Reset sidebar when generating new story
+    setShowUntaggedSidebar(false);
     try {
       const response = await axios.post(`${API_URL}/api/v1/posts/summary/generate_story`, {
         tag: selectedTag,
@@ -66,7 +67,6 @@ function GalleryPage() {
         user_commentary: userCommentary
       });
       setGeneratedStory(response.data.story);
-      // Show sidebar when story is generated
       setShowUntaggedSidebar(true);
     } catch (error) {
       console.error("Error generating story:", error);
@@ -77,8 +77,6 @@ function GalleryPage() {
   };
 
   const handleImageSelect = (image) => {
-    // When an image is selected and tagged, we can optionally navigate to it or refresh
-    // For now, just show a success message and refresh posts
     fetchPosts(currentPage, selectedTag);
     alert(`Story associated with image! Tag "${selectedTag}" has been added.`);
   };
@@ -93,7 +91,7 @@ function GalleryPage() {
     setSummaryData(null);
     setActivePlotIndex(null);
     setGeneratedStory(null);
-    setShowUntaggedSidebar(false); // Hide sidebar when tag changes
+    setShowUntaggedSidebar(false);
   };
 
   return (
@@ -157,11 +155,11 @@ function GalleryPage() {
                         }}
                         onClick={() => {
                           if (activePlotIndex === index) {
-                            setActivePlotIndex(null); // Toggle off
+                            setActivePlotIndex(null);
                           } else {
                             setActivePlotIndex(index);
-                            setGeneratedStory(null); // Clear previous story
-                            setUserCommentary(""); // Clear previous commentary
+                            setGeneratedStory(null);
+                            setUserCommentary("");
                           }
                         }}
                       >
@@ -240,20 +238,21 @@ function GalleryPage() {
       </div>
 
       <div className="gallery-grid">
-        {posts.map((post) => {
-          // --- THIS IS THE DEBUGGING LINE ---
-          // It will print each post object to the browser console.
-          console.log("Inspecting post object:", post);
-
-          return (
-            <Link to={`/posts/${post.id}`} key={post.id} className="gallery-item">
+        {posts.map((post) => (
+          <div key={post.id} className="gallery-item">
+            <Link to={`/posts/${post.id}`}>
               <img src={post.photo_url} alt={post.description || `Post ${post.id}`} />
+              {post.associated_epics && post.associated_epics.length > 0 && (
+                <div className="epic-badge" title={`Linked to: ${post.associated_epics.map(e => e.title).join(', ')}`}>
+                  📖
+                </div>
+              )}
             </Link>
-          );
-        })}
+            <PhraseGenerator post={post} onPhraseSaved={() => fetchPosts(currentPage, selectedTag)} />
+          </div>
+        ))}
       </div>
 
-      {/* Untagged Images Sidebar */}
       <UntaggedImagesSidebar
         isVisible={showUntaggedSidebar}
         onClose={() => setShowUntaggedSidebar(false)}

@@ -8,7 +8,9 @@ import GalleryPage from './pages/GalleryPage.jsx';
 import PostDetailPage from './components/PostDetailPage.jsx'; // Only one import
 import HighlightsPage from './pages/HighlightsPage.jsx'; // <-- Import the new page
 import './index.css';
-import TextFeedPage from './pages/TextFeedPage.jsx'; // <-- Import
+import TextFeedPage from './pages/TextFeedPage.jsx';
+import EpicsPage from './pages/EpicsPage.jsx';
+import EpicEditorPage from './pages/EpicEditorPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -17,13 +19,15 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <LandingPage /> },
       { path: "gallery", element: <GalleryPage /> },
-      { path: "highlights", element: <HighlightsPage /> }, // <-- Add this route
+      { path: "highlights", element: <HighlightsPage /> },
       { path: "posts/:postId", element: <PostDetailPage /> },
-      { path: "feed", element: <TextFeedPage /> }
+      { path: "feed", element: <TextFeedPage /> },
+      { path: "epics", element: <EpicsPage /> },
+      { path: "epics/:id", element: <EpicEditorPage /> }
     ],
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-    <RouterProvider router={router} />
+  <RouterProvider router={router} />
 );
