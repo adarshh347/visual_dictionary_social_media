@@ -62,3 +62,18 @@ class PostSuggestionRequest(BaseModel):
     text_blocks: List[TextBlock]
     suggestion_type: str  # "short_prose" or "story"
     user_commentary: Optional[str] = ""
+
+class ChatMessage(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+
+class VisionChatRequest(BaseModel):
+    image_url: str
+    text_blocks: Optional[List[TextBlock]] = []
+    user_message: str
+    conversation_history: Optional[List[ChatMessage]] = []
+
+class VisionRewriteRequest(BaseModel):
+    image_url: str
+    block_content: str
+    rewrite_instruction: Optional[str] = ""

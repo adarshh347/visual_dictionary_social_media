@@ -6,10 +6,9 @@
     display: flex;
     flex-direction: column;
     height: calc(100vh - 48px);
-    /* Account for navbar */
     width: 100%;
     overflow: hidden;
-    background: #1a1a1a;
+    background: linear-gradient(135deg, #0f0f12 0%, #1a1a20 50%, #12121a 100%);
 }
 
 /* Top bar with back button and title */
@@ -184,7 +183,9 @@
     min-width: 300px;
     flex: 1;
     overflow: hidden;
-    background: #1a1a1a;
+    background: linear-gradient(180deg, rgba(20, 20, 25, 0.95) 0%, rgba(15, 15, 20, 0.98) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 /* Content area */
@@ -244,40 +245,75 @@
 
 /* Action buttons */
 .action-btn {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
-    border: 1px solid #444;
-    background: #2a2a2a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
     color: #ccc;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .action-btn:hover {
-    background: #333;
-    border-color: #555;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
     color: #fff;
+    transform: translateY(-1px);
 }
 
 .action-btn.primary {
-    background: #2563eb;
-    border-color: #2563eb;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-color: transparent;
     color: #fff;
+    box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
 }
 
 .action-btn.primary:hover {
-    background: #1d4ed8;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+.action-btn.success {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(34, 197, 94, 0.3);
+}
+
+.action-btn.success:hover {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
 }
 
 .action-btn.danger {
-    background: #7f1d1d;
-    border-color: #991b1b;
-    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f87171;
 }
 
 .action-btn.danger:hover {
-    background: #991b1b;
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+}
+
+.action-btn.secondary {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #888;
+}
+
+.action-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ccc;
 }
 
 /* Edit mode styling */
@@ -479,4 +515,67 @@
         min-width: 100%;
         min-height: 200px;
     }
+}
+
+/* AI Sidebar Slide-in */
+.ai-sidebar {
+    position: absolute;
+    top: 48px;
+    /* Below topbar */
+    right: 0;
+    width: 450px;
+    height: calc(100vh - 48px);
+    background: rgba(18, 18, 23, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-sidebar.open {
+    transform: translateX(0);
+}
+
+.ai-sidebar-content {
+    flex: 1;
+    overflow: hidden;
+    padding: 1rem;
+}
+
+.ai-sidebar-close {
+    position: absolute;
+    top: 50%;
+    left: -16px;
+    width: 32px;
+    height: 32px;
+    background: #3b82f6;
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    transform: translateY(-50%);
+    z-index: 101;
+}
+
+.ai-sidebar-close:hover {
+    background: #2563eb;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Ensure ChatbotPanel takes full height in sidebar */
+.ai-sidebar .chatbot-panel {
+    height: 100%;
+    border: none;
+    background: transparent;
 }

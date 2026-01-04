@@ -10,7 +10,7 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 # shutil(high level file operations) vs os (low level file operations)
 import shutil
-from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, AddTagAndStoryRequest, StoryFlowRequest, PostSuggestionRequest
+from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, AddTagAndStoryRequest, StoryFlowRequest, PostSuggestionRequest, VisionChatRequest, VisionRewriteRequest
 
 from backend.database import post_collection,client
 import cloudinary
@@ -460,5 +460,35 @@ async def generate_post_suggestion(request: PostSuggestionRequest):
         text_blocks=text_blocks_dict,
         suggestion_type=request.suggestion_type,
         user_commentary=request.user_commentary or ""
+    )
+    return result
+
+@router.post("/chat/vision")
+async def vision_chat(request: VisionChatRequest):
+    """
+    Vision-enabled chat that can see the image and understand context.
+    Uses Llama 4 Maverick for vision capabilities.
+    """
+    # Convert Pydantic models to dict for LLM service
+    text_blocks_dict = [block.dict() for block in request.text_blocks] if request.text_blocks else []
+    conversation_dict = [msg.dict() for msg in request.conversation_history] if request.conversation_history else []
+    
+    result = llm_service.chat_with_vision(
+        image_url=request.image_url,
+        text_blocks=text_blocks_dict,
+        user_message=request.user_message,
+        conversation_history=conversation_dict
+    )
+    return result
+
+@router.post("/rewrite/vision")
+async def vision_rewrite(request: VisionRewriteRequest):
+    """
+    Rewrites a text block with awareness of the image content.
+    """
+    result = llm_service.rewrite_with_vision(
+        image_url=request.image_url,
+        block_content=request.block_content,
+        rewrite_instruction=request.rewrite_instruction or ""
     )
     return result
