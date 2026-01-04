@@ -7,6 +7,7 @@ import axios from 'axios';
 import BoundingBoxEditor from './BoundingBoxEditor';
 import RichTextBlock from './RichTextBlock';
 import PostSuggestionPanel from './PostSuggestionPanel';
+import ChatbotPanel from './ChatbotPanel';
 import StoryFlow from './StoryFlow';
 import { API_URL } from '../config/api';
 import './PostDetailPage.css';
@@ -25,6 +26,7 @@ function PostDetailPage() {
   const [leftPanelWidth, setLeftPanelWidth] = useState(45); // percentage
   const [activeLeftTab, setActiveLeftTab] = useState('image');
   const [activeRightTab, setActiveRightTab] = useState('content');
+  const [isChatOpen, setIsChatOpen] = useState(false); // AI Sidebar toggle
   const dividerRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -195,6 +197,14 @@ function PostDetailPage() {
       <div className="post-detail-topbar">
         <Link to="/gallery">← Gallery</Link>
         <div className="post-detail-actions">
+          <button
+            className={`action-btn ${isChatOpen ? 'primary' : 'secondary'}`}
+            onClick={() => setIsChatOpen(!isChatOpen)}
+            title="Toggle AI Assistant"
+            style={{ marginRight: '1rem' }}
+          >
+            ✨ AI Assistant
+          </button>
           {!isEditing && (
             <button className="action-btn" onClick={() => {
               setIsEditing(true);
@@ -296,10 +306,14 @@ function PostDetailPage() {
                       + Add Block
                     </button>
 
-                    <PostSuggestionPanel
-                      textBlocks={editedBlocks}
-                      onSuggestionSelect={handleSuggestionSelect}
-                    />
+                    {/* Inline Fallback Suggestion Panel */}
+                    <div style={{ marginTop: '2rem', borderTop: '1px solid #333', paddingTop: '1rem' }}>
+                      <h4 style={{ color: '#666', fontSize: '0.8rem', marginBottom: '0.5rem' }}>Legacy Generator</h4>
+                      <PostSuggestionPanel
+                        textBlocks={editedBlocks}
+                        onSuggestionSelect={handleSuggestionSelect}
+                      />
+                    </div>
 
                     <div className="edit-section" style={{ marginTop: '1rem' }}>
                       <h4>Tags</h4>
@@ -414,6 +428,24 @@ function PostDetailPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* AI Slide-out Sidebar */}
+      <div className={`ai-sidebar ${isChatOpen ? 'open' : ''}`}>
+        <div className="ai-sidebar-content">
+          <ChatbotPanel
+            imageUrl={post.photo_url}
+            textBlocks={isEditing ? editedBlocks : (post.text_blocks || [])}
+            onAddBlock={isEditing ? handleSuggestionSelect : undefined}
+          />
+        </div>
+        <button
+          className="ai-sidebar-close"
+          onClick={() => setIsChatOpen(false)}
+          title="Close AI Assistant"
+        >
+          →
+        </button>
       </div>
     </div>
   );

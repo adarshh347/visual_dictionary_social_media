@@ -516,3 +516,66 @@
         min-height: 200px;
     }
 }
+
+/* AI Sidebar Slide-in */
+.ai-sidebar {
+    position: absolute;
+    top: 48px;
+    /* Below topbar */
+    right: 0;
+    width: 450px;
+    height: calc(100vh - 48px);
+    background: rgba(18, 18, 23, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.5);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-sidebar.open {
+    transform: translateX(0);
+}
+
+.ai-sidebar-content {
+    flex: 1;
+    overflow: hidden;
+    padding: 1rem;
+}
+
+.ai-sidebar-close {
+    position: absolute;
+    top: 50%;
+    left: -16px;
+    width: 32px;
+    height: 32px;
+    background: #3b82f6;
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+    transform: translateY(-50%);
+    z-index: 101;
+}
+
+.ai-sidebar-close:hover {
+    background: #2563eb;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Ensure ChatbotPanel takes full height in sidebar */
+.ai-sidebar .chatbot-panel {
+    height: 100%;
+    border: none;
+    background: transparent;
+}
