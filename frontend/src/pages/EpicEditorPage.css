@@ -1,0 +1,287 @@
+/* frontend/src/pages/EpicEditorPage.css */
+
+.epic-editor-page {
+    padding: 2rem;
+    max-width: 1600px;
+    /* Widened for laptops */
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: var(--bg-dark);
+    /* Use global dark bg */
+}
+
+.epic-editor-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    color: var(--text-muted);
+}
+
+.editor-container {
+    max-width: 1200px;
+    /* Widened form container */
+    margin: 0 auto;
+}
+
+.creation-form {
+    background: var(--bg-card);
+    padding: 3rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-premium);
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 1.1rem;
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+    width: 100%;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    font-size: 1.1rem;
+    color: #fff;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-muted);
+}
+
+.form-group.checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.form-group.checkbox label {
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 1.2rem;
+    background: var(--accent-primary);
+    color: #0f1115;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+}
+
+.submit-btn:hover {
+    background: #e5c150;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+/* Editor View */
+.editor-header {
+    margin-bottom: 4rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 2rem;
+}
+
+.editor-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, #fff, var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.meta-info {
+    color: var(--text-muted);
+    font-size: 1rem;
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.story-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 6rem;
+    /* More breathing room between blocks */
+}
+
+.story-block {
+    display: grid;
+    grid-template-columns: 1fr 450px;
+    /* Wider image column */
+    gap: 4rem;
+    align-items: start;
+}
+
+.block-content {
+    position: relative;
+    padding-left: 4rem;
+}
+
+.block-number {
+    position: absolute;
+    left: 0;
+    top: -10px;
+    font-size: 4rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.05);
+    line-height: 1;
+    font-family: 'Playfair Display', serif;
+}
+
+.block-content p {
+    font-size: 1.25rem;
+    line-height: 1.8;
+    color: var(--text-main);
+    white-space: pre-wrap;
+}
+
+.block-image-section {
+    position: sticky;
+    top: 2rem;
+}
+
+.image-placeholder {
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px dashed var(--border-subtle);
+    border-radius: 12px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    transition: all 0.2s;
+}
+
+.image-placeholder:hover {
+    border-color: var(--accent-secondary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.image-placeholder button {
+    background: transparent;
+    border: 1px solid var(--accent-secondary);
+    color: var(--accent-secondary);
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.image-placeholder button:hover {
+    background: var(--accent-secondary);
+    color: #000;
+}
+
+.image-placeholder p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.associated-image {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-subtle);
+}
+
+.associated-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.associated-image:hover img {
+    transform: scale(1.03);
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    backdrop-filter: blur(2px);
+}
+
+.associated-image:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-overlay button {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    transform: translateY(10px);
+    transition: all 0.2s;
+}
+
+.associated-image:hover .image-overlay button {
+    transform: translateY(0);
+}
+
+@media (max-width: 1024px) {
+    .story-block {
+        grid-template-columns: 1fr;
+        /* Stack on smaller screens */
+        gap: 2rem;
+    }
+
+    .block-image-section {
+        position: static;
+        margin-top: 2rem;
+    }
+
+    .epic-editor-page {
+        padding: 1rem;
+    }
+}

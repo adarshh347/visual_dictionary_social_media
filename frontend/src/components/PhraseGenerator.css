@@ -1,0 +1,259 @@
+/* Phrase Generator Styles */
+
+.phrase-trigger-btn {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(212, 175, 55, 0.9);
+    color: #000;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    z-index: 5;
+}
+
+.gallery-item:hover .phrase-trigger-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.phrase-trigger-btn:hover {
+    background: var(--accent-primary);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}
+
+.phrase-generator-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.phrase-generator-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.phrase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.phrase-header h3 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 1.3rem;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.phrase-controls {
+    padding: 1.2rem 1.5rem;
+}
+
+.control-group {
+    margin-bottom: 0.6rem;
+}
+
+.control-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-main);
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+    font-size: 0.9rem;
+}
+
+.control-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.control-group select {
+    width: 100%;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.control-group small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+}
+
+.generate-btn {
+    width: 100%;
+    padding: 0.8rem;
+    margin-top: 0.6rem;
+    background: var(--accent-primary);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.generate-btn:hover:not(:disabled) {
+    background: #e5c150;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.generate-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.phrase-editor {
+    padding: 1.5rem;
+}
+
+.phrase-display {
+    margin-bottom: 1.5rem;
+}
+
+.phrase-display label {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.6rem;
+}
+
+.original-phrase {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 1rem;
+    color: var(--text-main);
+    line-height: 1.6;
+    font-style: italic;
+}
+
+.phrase-edit {
+    margin-bottom: 1.5rem;
+}
+
+.phrase-edit label {
+    display: block;
+    color: var(--text-main);
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+}
+
+.phrase-edit textarea {
+    width: 100%;
+    padding: 0.9rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.phrase-edit textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.phrase-edit small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+}
+
+.phrase-actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: flex-end;
+}
+
+.phrase-actions button {
+    padding: 0.7rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.phrase-actions .btn-primary {
+    background: var(--accent-primary);
+    color: #000;
+}
+
+.phrase-actions .btn-primary:hover:not(:disabled) {
+    background: #e5c150;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.phrase-actions .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-main);
+}
+
+.phrase-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--text-muted);
+}
+
+.phrase-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
