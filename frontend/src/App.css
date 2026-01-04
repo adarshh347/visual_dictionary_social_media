@@ -27,6 +27,20 @@ body {
   line-height: 1.5;
 }
 
+/* --- App Layout --- */
+.app-layout {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Landing page override - white background */
+.app-layout--landing {
+  background: #fafafa;
+  background-image: none;
+  width: 100%;
+  overflow-x: hidden;
+}
+
 /* --- Main Layout for Laptop Ratios --- */
 .app-content {
   width: 94%;
