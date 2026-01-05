@@ -9,65 +9,94 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* --- LIGHT THEME (Default) --- */
-  --bg-primary: #f8fafc;
-  --bg-secondary: #f1f5f9;
-  --bg-tertiary: #e2e8f0;
+  /* --- LIQUID METALLIC THEME (Light / Default) --- */
+  /* Base - "Steel & Silver" */
+  --bg-primary: #F5F7FA;
+  /* Clean, light metallic base */
+  --bg-secondary: #E8EEF2;
+  /* Slightly darker steel */
+  --bg-tertiary: #DDE5EB;
+  /* Structural elements */
 
-  --surface-primary: #ffffff;
-  --surface-secondary: #f8fafc;
-  --surface-hover: #f1f5f9;
+  --surface-primary: #FFFFFF;
+  --surface-secondary: #F0F4F8;
+  --surface-hover: #E6ECF1;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
-  --text-inverse: #ffffff;
+  /* Text - High Contrast */
+  --text-primary: #1A2B3C;
+  /* Deep metal dark blue */
+  --text-secondary: #4A5B6D;
+  /* Oxidation grey */
+  --text-tertiary: #7D8E9F;
+  /* Subtle metallic */
+  --text-inverse: #FFFFFF;
 
-  --border-subtle: #e2e8f0;
-  --border-medium: #cbd5e1;
-  --border-strong: #94a3b8;
+  /* Borders & Dividers */
+  --border-subtle: #DEE4EA;
+  --border-medium: #C8D3DE;
+  --border-strong: #94A6B8;
 
-  --accent-primary: #3b82f6;
-  --accent-hover: #2563eb;
-  --accent-surface: #eff6ff;
-  /* Light blue bg for active states */
+  /* Accent - "Liquid Chrome & Cool Teal" */
+  --accent-primary: #5B9AB9;
+  /* The prompt's Teal/Blue */
+  --accent-hover: #48829E;
+  --accent-surface: #E3F1F6;
+  /* Very light teal tint */
+  --accent-gradient: linear-gradient(135deg, #74b0ce 0%, #5B9AB9 100%);
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Metallic Specifics */
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-bg: rgba(245, 247, 250, 0.7);
+  --metal-shine: linear-gradient(120deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 70%);
 
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  /* Shadows - Ambient Occlusion style (Softer, spread out) */
+  --shadow-sm: 0 2px 8px -2px rgba(26, 43, 60, 0.08);
+  /* Soft ambient */
+  --shadow-md: 0 8px 24px -6px rgba(26, 43, 60, 0.12);
+  --shadow-lg: 0 16px 48px -12px rgba(26, 43, 60, 0.18);
+  --shadow-metallic: 0 4px 12px rgba(166, 180, 200, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  /* Inner light for volume */
+
+  /* Radii - "Pill" Shapes */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-pill: 9999px;
 }
 
-/* --- DARK THEME OVERRIDES --- */
+/* --- DARK THEME OVERRIDES (Polished Steel) --- */
 [data-theme='dark'] {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
+  --bg-primary: #0f1216;
+  /* Deep space metal */
+  --bg-secondary: #1a1f26;
+  /* Brushed steel */
+  --bg-tertiary: #252b36;
 
-  --surface-primary: #1e293b;
-  --surface-secondary: #334155;
-  --surface-hover: #334155;
+  --surface-primary: #151a21;
+  --surface-secondary: #1e2530;
+  --surface-hover: #2a3240;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-tertiary: #94a3b8;
-  --text-inverse: #0f172a;
+  --text-primary: #E8F1F5;
+  /* Bright steel text */
+  --text-secondary: #94A3B8;
+  --text-tertiary: #64748B;
+  --text-inverse: #0f1216;
 
-  --border-subtle: #334155;
-  --border-medium: #475569;
-  --border-strong: #64748b;
+  --border-subtle: #2A3645;
+  --border-medium: #3E4C5E;
+  --border-strong: #52637A;
 
-  --accent-primary: #60a5fa;
-  --accent-hover: #3b82f6;
-  --accent-surface: rgba(59, 130, 246, 0.15);
+  --accent-primary: #5B9AB9;
+  /* Keep accent consistent but glowing */
+  --accent-hover: #74b0ce;
+  --accent-surface: rgba(91, 154, 185, 0.15);
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(20, 25, 35, 0.7);
+
+  --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+  --shadow-metallic: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 body {
@@ -77,59 +106,82 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll from effects */
 }
 
-/* Global Button Reset */
+/* Global Button Reset - Pill Shapes */
 button {
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+  border-radius: var(--radius-pill);
+  /* Full Pill as requested */
+  border: 1px solid var(--border-medium);
+  padding: 0.7em 1.5em;
+  /* Larger touch target */
+  font-size: 0.95em;
+  font-weight: 600;
   font-family: inherit;
   background-color: var(--surface-primary);
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Fluid easing */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  box-shadow: var(--shadow-sm);
+  /* Subtle depth */
+  position: relative;
+  overflow: hidden;
 }
 
 button:hover {
   background-color: var(--surface-hover);
-  border-color: var(--border-medium);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
+button:active {
+  transform: scale(0.98);
+}
+
+/* Primary "Liquid" Button */
 button.primary {
-  background-color: var(--accent-primary);
+  background: var(--accent-primary);
+  background: var(--accent-gradient);
+  /* Subtle gradient */
   color: var(--text-inverse);
-  border-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(91, 154, 185, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  /* Metallic glow */
 }
 
 button.primary:hover {
   background-color: var(--accent-hover);
+  box-shadow: 0 6px 20px rgba(91, 154, 185, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 button:focus-visible {
   outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
-/* Scrollbar Styling */
+/* Scrollbar Styling - Sleek */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border-medium);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--bg-primary);
+  /* Padding effect */
 }
 
 ::-webkit-scrollbar-thumb:hover {
