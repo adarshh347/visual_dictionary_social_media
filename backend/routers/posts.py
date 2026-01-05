@@ -5,12 +5,14 @@ import os
 import math
 import json
 import random
+import httpx  # For fetching images from URLs
+from io import BytesIO
 from datetime import datetime, timezone
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 # shutil(high level file operations) vs os (low level file operations)
 import shutil
-from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, AddTagAndStoryRequest, StoryFlowRequest, PostSuggestionRequest, VisionChatRequest, VisionRewriteRequest, NodeExpansionRequest
+from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, AddTagAndStoryRequest, StoryFlowRequest, PostSuggestionRequest, VisionChatRequest, VisionRewriteRequest, NodeExpansionRequest, UrlUploadRequest
 
 from backend.database import post_collection,client
 import cloudinary
@@ -94,7 +96,59 @@ async def create_post(
     created_post = await post_collection.find_one({"_id": new_post.inserted_id})
     return post_helper(created_post)
 
+# --- Upload from URL (for Chrome Extension) ---
+@router.post("/upload-from-url", response_model=Post, status_code=201)
+async def create_post_from_url(request: UrlUploadRequest):
+    """
+    Upload an image from a URL (used by the Chrome extension).
+    Fetches the image and uploads it to Cloudinary.
+    """
+    try:
+        # Fetch the image from the URL
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+            # Add headers to mimic a browser request
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+                "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+                "Referer": request.image_url
+            }
+            response = await client.get(request.image_url, headers=headers)
+            response.raise_for_status()
+            
+            # Check if it's an image
+            content_type = response.headers.get("content-type", "")
+            if not content_type.startswith("image/"):
+                raise HTTPException(status_code=400, detail=f"URL does not point to an image (content-type: {content_type})")
+            
+            # Upload to Cloudinary
+            image_data = BytesIO(response.content)
+            public_id = f"posts/{uuid.uuid4()}"
+            upload_result = cloudinary.uploader.upload(image_data, public_id=public_id)
+            
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=400, detail=f"Failed to fetch image: HTTP {e.response.status_code}")
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=400, detail=f"Failed to fetch image: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+    
+    # Create the post document
+    post_document = {
+        "photo_url": upload_result["secure_url"],
+        "photo_public_id": upload_result["public_id"],
+        "updated_at": datetime.now(timezone.utc),
+        "text_blocks": [],
+        "bounding_box_tags": {},
+        "general_tags": request.general_tags or [],
+        "source_url": request.image_url  # Store original URL for reference
+    }
+    
+    new_post = await post_collection.insert_one(post_document)
+    created_post = await post_collection.find_one({"_id": new_post.inserted_id})
+    return post_helper(created_post)
+
 # below part commented out
+
 
 @router.post("/bulk-upload", response_model=List[Post], status_code=201)
 async def create_multiple_posts(files: List[UploadFile] = File(...)):
