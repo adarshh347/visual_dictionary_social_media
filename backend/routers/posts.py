@@ -10,7 +10,7 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 # shutil(high level file operations) vs os (low level file operations)
 import shutil
-from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, AddTagAndStoryRequest, StoryFlowRequest, PostSuggestionRequest, VisionChatRequest, VisionRewriteRequest
+from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, AddTagAndStoryRequest, StoryFlowRequest, PostSuggestionRequest, VisionChatRequest, VisionRewriteRequest, NodeExpansionRequest
 
 from backend.database import post_collection,client
 import cloudinary
@@ -64,6 +64,7 @@ def post_helper(post) -> dict:
         "bounding_box_tags": post.get("bounding_box_tags", {}), # Fallback to an empty dict
         "general_tags": post.get("general_tags", []), # Fallback to an empty list
         "associated_epics": post.get("associated_epics", []), # Fallback to an empty list
+        "highlights": post.get("highlights", []),  # NEW: Underlined text collection
     }
 
 
@@ -264,6 +265,7 @@ async def get_highlights():
 
 
 from backend.services.llm_service import llm_service
+from backend.services.editor_llm_service import editor_llm_service
 
 @router.get("/summary/{tag}")
 async def get_tag_summary(tag: str):
@@ -456,7 +458,7 @@ async def generate_post_suggestion(request: PostSuggestionRequest):
     """
     # Convert Pydantic models to dict for LLM service
     text_blocks_dict = [block.dict() for block in request.text_blocks]
-    result = llm_service.generate_post_suggestion(
+    result = editor_llm_service.generate_post_suggestion(
         text_blocks=text_blocks_dict,
         suggestion_type=request.suggestion_type,
         user_commentary=request.user_commentary or ""
@@ -473,7 +475,7 @@ async def vision_chat(request: VisionChatRequest):
     text_blocks_dict = [block.dict() for block in request.text_blocks] if request.text_blocks else []
     conversation_dict = [msg.dict() for msg in request.conversation_history] if request.conversation_history else []
     
-    result = llm_service.chat_with_vision(
+    result = editor_llm_service.chat_with_vision(
         image_url=request.image_url,
         text_blocks=text_blocks_dict,
         user_message=request.user_message,
@@ -486,9 +488,25 @@ async def vision_rewrite(request: VisionRewriteRequest):
     """
     Rewrites a text block with awareness of the image content.
     """
-    result = llm_service.rewrite_with_vision(
+    result = editor_llm_service.rewrite_with_vision(
         image_url=request.image_url,
         block_content=request.block_content,
         rewrite_instruction=request.rewrite_instruction or ""
     )
     return result
+
+@router.post("/flow/expand-node")
+async def expand_flow_node(request: NodeExpansionRequest):
+    """
+    Generates a detailed literary expansion for a specific story flow node.
+    Uses two-stage pipeline: Maverick (vision) -> GPT-OSS (literary refinement).
+    
+    Called when user clicks on a node in the StoryFlow visualization.
+    """
+    result = editor_llm_service.generate_node_expansion(
+        node_text=request.node_text,
+        image_url=request.image_url,
+        story_context=request.story_context
+    )
+    return result
+

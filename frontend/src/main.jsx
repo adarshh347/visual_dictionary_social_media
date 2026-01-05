@@ -30,6 +30,12 @@ const router = createBrowserRouter([
   },
 ]);
 
+import { ThemeProvider } from './context/ThemeContext';
+
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <RouterProvider router={router} />
+  <React.StrictMode>
+    <ThemeProvider>
+      <RouterProvider router={router} />
+    </ThemeProvider>
+  </React.StrictMode>
 );

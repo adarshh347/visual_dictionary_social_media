@@ -1,5 +1,6 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Default Typography */
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -7,61 +8,182 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* --- LIQUID METALLIC THEME (Light / Default) --- */
+  /* Base - "Steel & Silver" */
+  --bg-primary: #F5F7FA;
+  /* Clean, light metallic base */
+  --bg-secondary: #E8EEF2;
+  /* Slightly darker steel */
+  --bg-tertiary: #DDE5EB;
+  /* Structural elements */
+
+  --surface-primary: #FFFFFF;
+  --surface-secondary: #F0F4F8;
+  --surface-hover: #E6ECF1;
+
+  /* Text - High Contrast */
+  --text-primary: #1A2B3C;
+  /* Deep metal dark blue */
+  --text-secondary: #4A5B6D;
+  /* Oxidation grey */
+  --text-tertiary: #7D8E9F;
+  /* Subtle metallic */
+  --text-inverse: #FFFFFF;
+
+  /* Borders & Dividers */
+  --border-subtle: #DEE4EA;
+  --border-medium: #C8D3DE;
+  --border-strong: #94A6B8;
+
+  /* Accent - "Liquid Chrome & Cool Teal" */
+  --accent-primary: #5B9AB9;
+  /* The prompt's Teal/Blue */
+  --accent-hover: #48829E;
+  --accent-surface: #E3F1F6;
+  /* Very light teal tint */
+  --accent-gradient: linear-gradient(135deg, #74b0ce 0%, #5B9AB9 100%);
+
+  /* Metallic Specifics */
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-bg: rgba(245, 247, 250, 0.7);
+  --metal-shine: linear-gradient(120deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 70%);
+
+  /* Shadows - Ambient Occlusion style (Softer, spread out) */
+  --shadow-sm: 0 2px 8px -2px rgba(26, 43, 60, 0.08);
+  /* Soft ambient */
+  --shadow-md: 0 8px 24px -6px rgba(26, 43, 60, 0.12);
+  --shadow-lg: 0 16px 48px -12px rgba(26, 43, 60, 0.18);
+  --shadow-metallic: 0 4px 12px rgba(166, 180, 200, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  /* Inner light for volume */
+
+  /* Radii - "Pill" Shapes */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-pill: 9999px;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
+/* --- DARK THEME OVERRIDES (Polished Steel) --- */
+[data-theme='dark'] {
+  --bg-primary: #0f1216;
+  /* Deep space metal */
+  --bg-secondary: #1a1f26;
+  /* Brushed steel */
+  --bg-tertiary: #252b36;
 
-a:hover {
-  color: #535bf2;
+  --surface-primary: #151a21;
+  --surface-secondary: #1e2530;
+  --surface-hover: #2a3240;
+
+  --text-primary: #E8F1F5;
+  /* Bright steel text */
+  --text-secondary: #94A3B8;
+  --text-tertiary: #64748B;
+  --text-inverse: #0f1216;
+
+  --border-subtle: #2A3645;
+  --border-medium: #3E4C5E;
+  --border-strong: #52637A;
+
+  --accent-primary: #5B9AB9;
+  /* Keep accent consistent but glowing */
+  --accent-hover: #74b0ce;
+  --accent-surface: rgba(91, 154, 185, 0.15);
+
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(20, 25, 35, 0.7);
+
+  --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+  --shadow-metallic: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll from effects */
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
+/* Global Button Reset - Pill Shapes */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+  border-radius: var(--radius-pill);
+  /* Full Pill as requested */
+  border: 1px solid var(--border-medium);
+  padding: 0.7em 1.5em;
+  /* Larger touch target */
+  font-size: 0.95em;
+  font-weight: 600;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Fluid easing */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: var(--shadow-sm);
+  /* Subtle depth */
+  position: relative;
+  overflow: hidden;
 }
 
 button:hover {
-  border-color: #646cff;
+  background-color: var(--surface-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
-button:focus,
+button:active {
+  transform: scale(0.98);
+}
+
+/* Primary "Liquid" Button */
+button.primary {
+  background: var(--accent-primary);
+  background: var(--accent-gradient);
+  /* Subtle gradient */
+  color: var(--text-inverse);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(91, 154, 185, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  /* Metallic glow */
+}
+
+button.primary:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 6px 20px rgba(91, 154, 185, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
+/* Scrollbar Styling - Sleek */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-  a:hover {
-    color: #747bff;
-  }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  button {
-    background-color: #f9f9f9;
-  }
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--bg-primary);
+  /* Padding effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
 }

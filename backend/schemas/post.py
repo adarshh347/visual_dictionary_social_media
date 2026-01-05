@@ -21,6 +21,12 @@ class EpicRef(BaseModel):
     epic_id: str
     title: str
 
+class Highlight(BaseModel):
+    id: str = Field(default_factory=lambda: f"hl_{uuid.uuid4()}")
+    text: str  # The underlined/highlighted text
+    block_id: Optional[str] = None  # Which text block it came from
+    created_at: Optional[datetime] = None
+
 # main schema for post object, used for response
 class Post(BaseModel):
     id: str
@@ -31,11 +37,13 @@ class Post(BaseModel):
     bounding_box_tags : Optional[dict[str, BoundingBox]] = None
     general_tags : Optional[List[str]] = None
     associated_epics: Optional[List[EpicRef]] = []
+    highlights: Optional[List[Highlight]] = []  # NEW: Underlined text collection
 
 class PostUpdate(BaseModel):
     text_blocks: Optional[List[TextBlock]] = None
     bounding_box_tags: Optional[dict[str, BoundingBox]] = None
     general_tags: Optional[List[str]] = None
+    highlights: Optional[List[Highlight]] = None  # NEW: Can update highlights
 
 class PaginatedPosts(BaseModel):
     posts: List[Post]
@@ -77,3 +85,8 @@ class VisionRewriteRequest(BaseModel):
     image_url: str
     block_content: str
     rewrite_instruction: Optional[str] = ""
+
+class NodeExpansionRequest(BaseModel):
+    node_text: str
+    image_url: str
+    story_context: str

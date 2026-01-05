@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
-
 import { API_URL } from '../config/api';
+import './PostSuggestionPanel.css';
 
 function PostSuggestionPanel({ textBlocks, onSuggestionSelect }) {
   const [activeTab, setActiveTab] = useState('short_prose');
@@ -28,7 +28,7 @@ function PostSuggestionPanel({ textBlocks, onSuggestionSelect }) {
         suggestion_type: type,
         user_commentary: userCommentary
       });
-      
+
       setSuggestions(prev => ({
         ...prev,
         [type]: response.data.suggestion
@@ -48,75 +48,35 @@ function PostSuggestionPanel({ textBlocks, onSuggestionSelect }) {
   };
 
   return (
-    <div style={{
-      marginTop: '20px',
-      border: '1px solid #555',
-      borderRadius: '8px',
-      backgroundColor: '#2a2a2a',
-      overflow: 'hidden'
-    }}>
+    <div className="legacy-panel">
       {/* Header with Tabs */}
-      <div style={{
-        display: 'flex',
-        borderBottom: '1px solid #555',
-        backgroundColor: '#333'
-      }}>
+      <div className="legacy-tabs">
         <button
           onClick={() => setActiveTab('short_prose')}
-          style={{
-            flex: 1,
-            padding: '12px',
-            border: 'none',
-            backgroundColor: activeTab === 'short_prose' ? '#4CAF50' : 'transparent',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: activeTab === 'short_prose' ? 'bold' : 'normal'
-          }}
+          className={`legacy-tab ${activeTab === 'short_prose' ? 'active' : ''}`}
         >
           Short Prose
         </button>
         <button
           onClick={() => setActiveTab('story')}
-          style={{
-            flex: 1,
-            padding: '12px',
-            border: 'none',
-            borderLeft: '1px solid #555',
-            backgroundColor: activeTab === 'story' ? '#4CAF50' : 'transparent',
-            color: '#fff',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: activeTab === 'story' ? 'bold' : 'normal'
-          }}
+          className={`legacy-tab ${activeTab === 'story' ? 'active' : ''}`}
         >
           Story
         </button>
       </div>
 
       {/* Content Area */}
-      <div style={{ padding: '16px' }}>
+      <div className="legacy-content">
         {/* Commentary Input */}
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', color: '#fff', marginBottom: '8px', fontSize: '14px' }}>
+        <div className="legacy-form-group">
+          <label className="legacy-label">
             Commentary / Instructions (optional):
           </label>
           <textarea
             value={userCommentary}
             onChange={(e) => setUserCommentary(e.target.value)}
             placeholder="E.g., Make it more dramatic, focus on emotions, add dialogue..."
-            style={{
-              width: '100%',
-              minHeight: '80px',
-              padding: '10px',
-              borderRadius: '4px',
-              border: '1px solid #555',
-              backgroundColor: '#222',
-              color: '#fff',
-              fontFamily: 'inherit',
-              fontSize: '14px',
-              resize: 'vertical'
-            }}
+            className="legacy-textarea"
           />
         </div>
 
@@ -124,69 +84,33 @@ function PostSuggestionPanel({ textBlocks, onSuggestionSelect }) {
         <button
           onClick={() => generateSuggestion(activeTab)}
           disabled={loading[activeTab] || !textBlocks || textBlocks.length === 0}
-          style={{
-            width: '100%',
-            backgroundColor: loading[activeTab] ? '#666' : '#2196F3',
-            color: 'white',
-            padding: '12px',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: loading[activeTab] ? 'not-allowed' : 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold',
-            marginBottom: '16px'
-          }}
+          className="legacy-btn"
         >
           {loading[activeTab] ? `Generating ${activeTab === 'short_prose' ? 'Short Prose' : 'Story'}...` : `Generate ${activeTab === 'short_prose' ? 'Short Prose' : 'Story'}`}
         </button>
 
         {/* Suggestion Display */}
         {suggestions[activeTab] && (
-          <div style={{
-            backgroundColor: '#1a1a1a',
-            padding: '16px',
-            borderRadius: '6px',
-            border: '1px solid #444',
-            marginBottom: '12px'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '12px'
-            }}>
-              <h4 style={{ margin: 0, color: '#4CAF50', fontSize: '16px' }}>
+          <div className="legacy-result">
+            <div className="legacy-result-header">
+              <h4 className="legacy-result-title">
                 {activeTab === 'short_prose' ? 'Short Prose Suggestion' : 'Story Suggestion'}
               </h4>
               <button
                 onClick={() => handleUseSuggestion(suggestions[activeTab])}
-                style={{
-                  backgroundColor: '#FF9800',
-                  color: 'white',
-                  padding: '6px 12px',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 'bold'
-                }}
+                className="legacy-use-btn"
               >
                 Use This
               </button>
             </div>
-            <p style={{
-              color: '#fff',
-              lineHeight: '1.8',
-              whiteSpace: 'pre-wrap',
-              margin: 0
-            }}>
+            <p className="legacy-text">
               {suggestions[activeTab]}
             </p>
           </div>
         )}
 
         {!suggestions[activeTab] && !loading[activeTab] && (
-          <p style={{ color: '#aaa', textAlign: 'center', fontStyle: 'italic', margin: 0 }}>
+          <p className="legacy-empty-msg">
             Click "Generate" to create a suggestion based on your text blocks.
           </p>
         )}
