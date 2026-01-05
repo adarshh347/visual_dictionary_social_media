@@ -10,7 +10,7 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 # shutil(high level file operations) vs os (low level file operations)
 import shutil
-from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, AddTagAndStoryRequest, StoryFlowRequest, PostSuggestionRequest, VisionChatRequest, VisionRewriteRequest
+from backend.schemas.post import Post, PostUpdate, PaginatedPosts, StoryGenerationRequest, AddTagRequest, AddTagAndStoryRequest, StoryFlowRequest, PostSuggestionRequest, VisionChatRequest, VisionRewriteRequest, NodeExpansionRequest
 
 from backend.database import post_collection,client
 import cloudinary
@@ -64,6 +64,7 @@ def post_helper(post) -> dict:
         "bounding_box_tags": post.get("bounding_box_tags", {}), # Fallback to an empty dict
         "general_tags": post.get("general_tags", []), # Fallback to an empty list
         "associated_epics": post.get("associated_epics", []), # Fallback to an empty list
+        "highlights": post.get("highlights", []),  # NEW: Underlined text collection
     }
 
 
@@ -493,3 +494,19 @@ async def vision_rewrite(request: VisionRewriteRequest):
         rewrite_instruction=request.rewrite_instruction or ""
     )
     return result
+
+@router.post("/flow/expand-node")
+async def expand_flow_node(request: NodeExpansionRequest):
+    """
+    Generates a detailed literary expansion for a specific story flow node.
+    Uses two-stage pipeline: Maverick (vision) -> GPT-OSS (literary refinement).
+    
+    Called when user clicks on a node in the StoryFlow visualization.
+    """
+    result = editor_llm_service.generate_node_expansion(
+        node_text=request.node_text,
+        image_url=request.image_url,
+        story_context=request.story_context
+    )
+    return result
+
