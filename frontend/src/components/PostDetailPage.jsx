@@ -1,10 +1,10 @@
 // frontend/src/components/PostDetailPage.jsx
-// LeetCode-style split-screen layout
+// LeetCode-style split-screen layout with Highlights feature
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Sparkles, Plus, X, ChevronRight, BookOpen, Trash2, Edit, Save, XCircle } from 'lucide-react';
+import { ArrowLeft, Sparkles, Plus, X, ChevronRight, BookOpen, Trash2, Edit, Save, XCircle, Highlighter, Underline } from 'lucide-react';
 import BoundingBoxEditor from './BoundingBoxEditor';
 import RichTextBlock from './RichTextBlock';
 import PostSuggestionPanel from './PostSuggestionPanel';
@@ -29,8 +29,21 @@ function PostDetailPage() {
   const [activeLeftTab, setActiveLeftTab] = useState('image');
   const [activeRightTab, setActiveRightTab] = useState('content');
   const [isChatOpen, setIsChatOpen] = useState(false); // AI Sidebar toggle
+  const [clickedNode, setClickedNode] = useState(null); // For node expansion in chatbot
+  const [highlights, setHighlights] = useState([]); // Underlined text collection
+  const [showUnderlineTooltip, setShowUnderlineTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [selectedText, setSelectedText] = useState('');
+  const [selectedBlockId, setSelectedBlockId] = useState(null);
   const dividerRef = useRef(null);
   const containerRef = useRef(null);
+  const contentAreaRef = useRef(null);
+
+  // Handler for when a story flow node is clicked
+  const handleFlowNodeClick = (nodeText) => {
+    setClickedNode(nodeText);
+    setIsChatOpen(true); // Open the AI sidebar with this context
+  };
 
   const fetchPost = async () => {
     try {
@@ -38,6 +51,7 @@ function PostDetailPage() {
       setPost(response.data);
       setEditedBlocks(response.data.text_blocks || []);
       setEditedTags(response.data.general_tags || []);
+      setHighlights(response.data.highlights || []);
     } catch (error) {
       console.error("Error fetching post:", error);
     }
@@ -59,6 +73,93 @@ function PostDetailPage() {
     fetchPost();
     fetchPopularTags();
   }, [postId]);
+
+  // Text selection handler for underlining
+  const handleTextSelection = (e) => {
+    if (isEditing) return; // Don't show underline option while editing
+
+    const selection = window.getSelection();
+    const text = selection.toString().trim();
+
+    if (text && text.length > 0) {
+      // Find which block the selection is in
+      const range = selection.getRangeAt(0);
+      const container = range.commonAncestorContainer;
+      const blockElement = container.nodeType === 3
+        ? container.parentElement?.closest('.text-block-item')
+        : container.closest?.('.text-block-item');
+
+      const blockId = blockElement?.getAttribute('data-block-id') || null;
+
+      setSelectedText(text);
+      setSelectedBlockId(blockId);
+
+      // Position tooltip near selection
+      const rect = range.getBoundingClientRect();
+      setTooltipPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top - 10
+      });
+      setShowUnderlineTooltip(true);
+    } else {
+      setShowUnderlineTooltip(false);
+    }
+  };
+
+  // Add highlight
+  const handleAddHighlight = async () => {
+    if (!selectedText) return;
+
+    const newHighlight = {
+      id: `hl_${Date.now()}`,
+      text: selectedText,
+      block_id: selectedBlockId,
+      created_at: new Date().toISOString()
+    };
+
+    const updatedHighlights = [...highlights, newHighlight];
+    setHighlights(updatedHighlights);
+    setShowUnderlineTooltip(false);
+
+    // Clear selection
+    window.getSelection().removeAllRanges();
+    setSelectedText('');
+
+    // Save to backend
+    try {
+      await axios.patch(`${API_URL}/api/v1/posts/${postId}`, {
+        highlights: updatedHighlights
+      });
+    } catch (error) {
+      console.error("Error saving highlight:", error);
+    }
+  };
+
+  // Remove highlight
+  const handleRemoveHighlight = async (highlightId) => {
+    const updatedHighlights = highlights.filter(h => h.id !== highlightId);
+    setHighlights(updatedHighlights);
+
+    // Save to backend
+    try {
+      await axios.patch(`${API_URL}/api/v1/posts/${postId}`, {
+        highlights: updatedHighlights
+      });
+    } catch (error) {
+      console.error("Error removing highlight:", error);
+    }
+  };
+
+  // Close tooltip when clicking elsewhere
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.underline-tooltip')) {
+        setShowUnderlineTooltip(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Resizable divider logic
   const isDraggingRef = useRef(false);
@@ -195,6 +296,25 @@ function PostDetailPage() {
 
   return (
     <div className="post-detail-page">
+      {/* Underline Tooltip */}
+      {showUnderlineTooltip && (
+        <div
+          className="underline-tooltip"
+          style={{
+            position: 'fixed',
+            left: tooltipPosition.x,
+            top: tooltipPosition.y,
+            transform: 'translate(-50%, -100%)',
+            zIndex: 1000
+          }}
+        >
+          <button onClick={handleAddHighlight} className="underline-btn">
+            <Underline size={16} />
+            <span>Underline</span>
+          </button>
+        </div>
+      )}
+
       {/* Top Bar */}
       <div className="post-detail-topbar">
         <Link to="/gallery" className="back-link">
@@ -272,15 +392,16 @@ function PostDetailPage() {
                 Story
               </button>
               <button
-                className={`panel-tab ${activeRightTab === 'flow' ? 'active' : ''}`}
-                onClick={() => setActiveRightTab('flow')}
+                className={`panel-tab ${activeRightTab === 'highlights' ? 'active' : ''}`}
+                onClick={() => setActiveRightTab('highlights')}
               >
-                Flow
+                <Highlighter size={14} style={{ marginRight: '0.3rem' }} />
+                Highlights {highlights.length > 0 && <span className="highlight-count">{highlights.length}</span>}
               </button>
             </div>
           </div>
 
-          <div className="content-area">
+          <div className="content-area" ref={contentAreaRef} onMouseUp={handleTextSelection}>
             {/* Epic Association */}
             {post.associated_epics && post.associated_epics.length > 0 && (
               <div className="epic-badge-section">
@@ -368,9 +489,18 @@ function PostDetailPage() {
                   </div>
                 ) : (
                   <>
+                    {/* Hint for underlining */}
+                    {post.text_blocks && post.text_blocks.length > 0 && (
+                      <div className="underline-hint">
+                        <Highlighter size={14} />
+                        <span>Select text to underline and save to Highlights</span>
+                      </div>
+                    )}
+
                     {(post.text_blocks || []).map((block) => (
                       <div
                         key={block.id}
+                        data-block-id={block.id}
                         className="text-block-item"
                         dangerouslySetInnerHTML={{ __html: block.content }}
                         style={{
@@ -380,21 +510,61 @@ function PostDetailPage() {
                         }}
                       />
                     ))}
+
+                    {/* Generate Flow Button - appears below story blocks in view mode */}
+                    {post.text_blocks && post.text_blocks.length > 0 && (
+                      <StoryFlow
+                        story={post.text_blocks.map(b => b.content).join('\n\n')}
+                        detailLevel="med"
+                        imageUrl={post.photo_url}
+                        onNodeClick={handleFlowNodeClick}
+                        showGenerateButton={true}
+                      />
+                    )}
                   </>
                 )}
               </>
             )}
 
-            {activeRightTab === 'flow' && post.text_blocks && post.text_blocks.length > 0 && (
-              <StoryFlow
-                story={post.text_blocks.map(b => b.content).join('\n\n')}
-                detailLevel="med"
-              />
+            {/* HIGHLIGHTS TAB (Replaced Flow Tab) */}
+            {activeRightTab === 'highlights' && (
+              <div className="highlights-section">
+                <div className="highlights-header">
+                  <Highlighter size={20} style={{ color: 'var(--accent-primary)' }} />
+                  <h4>Your Highlights</h4>
+                </div>
+
+                {highlights.length === 0 ? (
+                  <div className="empty-highlights">
+                    <Underline size={48} style={{ color: 'var(--border-medium)', marginBottom: '1rem' }} />
+                    <p>No highlights yet</p>
+                    <p className="hint">Select text in the Story tab and click "Underline" to save passages here.</p>
+                  </div>
+                ) : (
+                  <div className="highlights-list">
+                    {highlights.map((highlight, index) => (
+                      <div key={highlight.id} className="highlight-card">
+                        <div className="highlight-number">{index + 1}</div>
+                        <blockquote className="highlight-text">
+                          "{highlight.text}"
+                        </blockquote>
+                        <button
+                          className="remove-highlight-btn"
+                          onClick={() => handleRemoveHighlight(highlight.id)}
+                          title="Remove highlight"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
           {/* Tags display (when not editing) */}
-          {!isEditing && (
+          {!isEditing && activeRightTab === 'content' && (
             <div className="tags-section">
               <h4>Tags</h4>
               <ul className="tags-list">
@@ -429,6 +599,8 @@ function PostDetailPage() {
             imageUrl={post.photo_url}
             textBlocks={isEditing ? editedBlocks : (post.text_blocks || [])}
             onAddBlock={isEditing ? handleSuggestionSelect : undefined}
+            initialPrompt={clickedNode}
+            initialContext={post.text_blocks ? post.text_blocks.map(b => b.content).join('\n\n') : ''}
           />
         </div>
         <button
