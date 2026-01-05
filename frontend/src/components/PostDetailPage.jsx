@@ -4,11 +4,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { ArrowLeft, Sparkles, Plus, X, ChevronRight, BookOpen, Trash2, Edit, Save, XCircle } from 'lucide-react';
 import BoundingBoxEditor from './BoundingBoxEditor';
 import RichTextBlock from './RichTextBlock';
 import PostSuggestionPanel from './PostSuggestionPanel';
 import ChatbotPanel from './ChatbotPanel';
 import StoryFlow from './StoryFlow';
+import ThemeToggle from './ThemeToggle';
 import { API_URL } from '../config/api';
 import './PostDetailPage.css';
 
@@ -138,7 +140,7 @@ function PostDetailPage() {
   };
 
   const addBlock = (type = 'paragraph') => {
-    const newBlock = { id: `block_${Date.now()}`, type, content: '', color: '#2a2a2a' };
+    const newBlock = { id: `block_${Date.now()}`, type, content: '', color: 'transparent' };
     setEditedBlocks(currentBlocks => [...currentBlocks, newBlock]);
   };
 
@@ -169,7 +171,7 @@ function PostDetailPage() {
       id: `block_${Date.now()}`,
       type: 'paragraph',
       content: suggestion,
-      color: '#2a2a2a'
+      color: 'transparent'
     };
     setEditedBlocks([...editedBlocks, newBlock]);
   };
@@ -184,7 +186,7 @@ function PostDetailPage() {
   if (!post) {
     return (
       <div className="post-detail-page">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#888' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-secondary)' }}>
           Loading...
         </div>
       </div>
@@ -195,15 +197,18 @@ function PostDetailPage() {
     <div className="post-detail-page">
       {/* Top Bar */}
       <div className="post-detail-topbar">
-        <Link to="/gallery">← Gallery</Link>
+        <Link to="/gallery" className="back-link">
+          <ArrowLeft size={18} /> Gallery
+        </Link>
         <div className="post-detail-actions">
+          <ThemeToggle />
           <button
             className={`action-btn ${isChatOpen ? 'primary' : 'secondary'}`}
             onClick={() => setIsChatOpen(!isChatOpen)}
             title="Toggle AI Assistant"
             style={{ marginRight: '1rem' }}
           >
-            ✨ AI Assistant
+            <Sparkles size={16} /> AI Assistant
           </button>
           {!isEditing && (
             <button className="action-btn" onClick={() => {
@@ -211,10 +216,12 @@ function PostDetailPage() {
               setEditedBlocks(post.text_blocks || []);
               setEditedTags(post.general_tags || []);
             }}>
-              Edit
+              <Edit size={16} /> Edit
             </button>
           )}
-          <button className="action-btn danger" onClick={handleDelete}>Delete</button>
+          <button className="action-btn danger" onClick={handleDelete}>
+            <Trash2 size={16} /> Delete
+          </button>
         </div>
       </div>
 
@@ -246,11 +253,11 @@ function PostDetailPage() {
         </div>
 
         {/* Resizable Divider */}
-        {/* Resizable Divider */}
         <div
           className="split-divider"
           ref={dividerRef}
           onMouseDown={handleMouseDown}
+          title="Drag to resize"
         ></div>
 
         {/* Right Pane - Content */}
@@ -280,7 +287,7 @@ function PostDetailPage() {
                 <h5>Part of Epic</h5>
                 {post.associated_epics.map(epic => (
                   <Link to={`/epics/${epic.epic_id}`} key={epic.epic_id} className="epic-link">
-                    📖 {epic.title}
+                    <BookOpen size={14} /> {epic.title}
                   </Link>
                 ))}
               </div>
@@ -302,13 +309,13 @@ function PostDetailPage() {
                         />
                       ))}
                     </div>
-                    <button className="action-btn" onClick={() => addBlock('paragraph')} style={{ marginTop: '0.5rem' }}>
-                      + Add Block
+                    <button className="action-btn text-btn" onClick={() => addBlock('paragraph')} style={{ marginTop: '0.5rem' }}>
+                      <Plus size={16} /> Add Block
                     </button>
 
                     {/* Inline Fallback Suggestion Panel */}
-                    <div style={{ marginTop: '2rem', borderTop: '1px solid #333', paddingTop: '1rem' }}>
-                      <h4 style={{ color: '#666', fontSize: '0.8rem', marginBottom: '0.5rem' }}>Legacy Generator</h4>
+                    <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
+                      <h4 style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>Legacy Generator</h4>
                       <PostSuggestionPanel
                         textBlocks={editedBlocks}
                         onSuggestionSelect={handleSuggestionSelect}
@@ -317,15 +324,15 @@ function PostDetailPage() {
 
                     <div className="edit-section" style={{ marginTop: '1rem' }}>
                       <h4>Tags</h4>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                      <div className="tags-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
                         {editedTags.map(tag => (
-                          <span key={tag} className="tag-item" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <span key={tag} className="tag-item">
                             {tag}
                             <button
                               onClick={() => handleRemoveTag(tag)}
-                              style={{ background: 'none', border: 'none', color: '#888', cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}
+                              className="remove-tag-btn"
                             >
-                              ×
+                              <X size={12} />
                             </button>
                           </span>
                         ))}
@@ -333,23 +340,14 @@ function PostDetailPage() {
 
                       {popularTags.length > 0 && (
                         <div style={{ marginBottom: '0.5rem' }}>
-                          <span style={{ fontSize: '0.7rem', color: '#666' }}>Popular: </span>
+                          <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>Popular: </span>
                           {popularTags.filter(tag => !editedTags.includes(tag)).slice(0, 5).map(tag => (
                             <button
                               key={tag}
                               onClick={() => handleAddPopularTag(tag)}
-                              style={{
-                                padding: '0.2rem 0.4rem',
-                                background: '#2563eb',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '3px',
-                                fontSize: '0.7rem',
-                                cursor: 'pointer',
-                                marginRight: '0.3rem'
-                              }}
+                              className="popular-tag-btn"
                             >
-                              +{tag}
+                              <Plus size={10} /> {tag}
                             </button>
                           ))}
                         </div>
@@ -362,17 +360,9 @@ function PostDetailPage() {
                           value={currentTagInput}
                           onChange={(e) => setCurrentTagInput(e.target.value)}
                           onKeyDown={handleTagInputKeyDown}
-                          style={{
-                            flex: 1,
-                            padding: '0.4rem',
-                            background: '#2a2a2a',
-                            border: '1px solid #444',
-                            borderRadius: '4px',
-                            color: '#fff',
-                            fontSize: '0.8rem'
-                          }}
+                          className="tag-input"
                         />
-                        <button className="action-btn" onClick={handleAddTag}>Add</button>
+                        <button className="action-btn" onClick={handleAddTag}><Plus size={16} /> Add</button>
                       </div>
                     </div>
                   </div>
@@ -384,8 +374,9 @@ function PostDetailPage() {
                         className="text-block-item"
                         dangerouslySetInnerHTML={{ __html: block.content }}
                         style={{
-                          color: block.color && block.color !== '#2a2a2a' ? block.color : 'inherit',
-                          borderLeftColor: block.color && block.color !== '#2a2a2a' ? block.color : '#444'
+                          backgroundColor: block.color && block.color !== 'inherit' && block.color !== '#2a2a2a' ? block.color : 'transparent',
+                          padding: block.color && block.color !== 'inherit' && block.color !== 'transparent' ? '1rem' : '0 0 0 0.75rem',
+                          borderRadius: 'var(--radius-md)'
                         }}
                       />
                     ))}
@@ -417,13 +408,13 @@ function PostDetailPage() {
           {/* Edit actions */}
           {isEditing && (
             <div className="edit-actions">
-              <button className="action-btn primary" onClick={handleSave}>Save</button>
+              <button className="action-btn primary" onClick={handleSave}><Save size={16} /> Save</button>
               <button className="action-btn" onClick={() => {
                 setIsEditing(false);
                 setEditedTags(post.general_tags || []);
                 setEditedBlocks(post.text_blocks || []);
               }}>
-                Cancel
+                <XCircle size={16} /> Cancel
               </button>
             </div>
           )}
@@ -431,6 +422,7 @@ function PostDetailPage() {
       </div>
 
       {/* AI Slide-out Sidebar */}
+      <div className={`ai-sidebar-backdrop ${isChatOpen ? 'open' : ''}`} onClick={() => setIsChatOpen(false)}></div>
       <div className={`ai-sidebar ${isChatOpen ? 'open' : ''}`}>
         <div className="ai-sidebar-content">
           <ChatbotPanel
@@ -444,7 +436,7 @@ function PostDetailPage() {
           onClick={() => setIsChatOpen(false)}
           title="Close AI Assistant"
         >
-          →
+          <ChevronRight size={20} />
         </button>
       </div>
     </div>
