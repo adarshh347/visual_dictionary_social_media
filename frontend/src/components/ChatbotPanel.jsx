@@ -1,6 +1,4 @@
-// frontend/src/components/ChatbotPanel.jsx
-// AI Chatbot with vision capabilities for context-aware writing assistance
-
+import { Sparkles, Eye, FileText, Trash2, MessageSquare, User, Bot, Plus, Send } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { API_URL } from '../config/api';
@@ -98,9 +96,14 @@ function ChatbotPanel({ imageUrl, textBlocks, onAddBlock }) {
             {/* Header */}
             <div className="chatbot-header">
                 <div className="header-left">
-                    <span className="chatbot-icon">✨</span>
+                    <Sparkles className="chatbot-icon icon-spin" size={20} />
                     <span className="chatbot-title">AI Assistant</span>
-                    {imageUrl && <span className="vision-badge">👁️ Vision</span>}
+                    {imageUrl && (
+                        <div className="vision-badge">
+                            <Eye size={14} />
+                            <span>Vision</span>
+                        </div>
+                    )}
                 </div>
                 <div className="header-actions">
                     <button
@@ -108,10 +111,12 @@ function ChatbotPanel({ imageUrl, textBlocks, onAddBlock }) {
                         onClick={() => setShowBlockSelector(!showBlockSelector)}
                         title="Select context blocks"
                     >
-                        📝 Context {selectedBlocks.length > 0 && `(${selectedBlocks.length})`}
+                        <FileText size={16} />
+                        <span>Context</span>
+                        {selectedBlocks.length > 0 && <span className="badge-count">{selectedBlocks.length}</span>}
                     </button>
                     <button className="clear-btn" onClick={clearChat} title="Clear chat">
-                        🗑️
+                        <Trash2 size={16} />
                     </button>
                 </div>
             </div>
@@ -147,7 +152,7 @@ function ChatbotPanel({ imageUrl, textBlocks, onAddBlock }) {
             <div className="chatbot-messages">
                 {messages.length === 0 ? (
                     <div className="empty-chat">
-                        <span className="empty-icon">💬</span>
+                        <MessageSquare className="empty-icon" size={48} />
                         <p>Ask me anything about this image or your text.</p>
                         <p className="hint">I can see the image and help you write, edit, or expand your content.</p>
                     </div>
@@ -155,7 +160,7 @@ function ChatbotPanel({ imageUrl, textBlocks, onAddBlock }) {
                     messages.map((msg, idx) => (
                         <div key={idx} className={`chat-message ${msg.role}`}>
                             <div className="message-avatar">
-                                {msg.role === 'user' ? '👤' : '🤖'}
+                                {msg.role === 'user' ? <User size={18} /> : <Bot size={18} />}
                             </div>
                             <div className="message-content">
                                 <div className="message-text">{msg.content}</div>
@@ -165,7 +170,7 @@ function ChatbotPanel({ imageUrl, textBlocks, onAddBlock }) {
                                         onClick={() => handleAddToBlocks(msg.content)}
                                         title="Add this response as a new text block"
                                     >
-                                        ➕ Add to Blocks
+                                        <Plus size={14} /> Add to Blocks
                                     </button>
                                 )}
                             </div>
@@ -174,7 +179,7 @@ function ChatbotPanel({ imageUrl, textBlocks, onAddBlock }) {
                 )}
                 {isLoading && (
                     <div className="chat-message assistant loading">
-                        <div className="message-avatar">🤖</div>
+                        <div className="message-avatar"><Bot size={18} /></div>
                         <div className="message-content">
                             <div className="typing-indicator">
                                 <span></span><span></span><span></span>
@@ -192,7 +197,7 @@ function ChatbotPanel({ imageUrl, textBlocks, onAddBlock }) {
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Ask about the image or request content..."
-                    rows={2}
+                    rows={1}
                     disabled={isLoading}
                 />
                 <button
@@ -200,7 +205,7 @@ function ChatbotPanel({ imageUrl, textBlocks, onAddBlock }) {
                     onClick={handleSend}
                     disabled={!inputValue.trim() || isLoading}
                 >
-                    {isLoading ? '...' : '➤'}
+                    {isLoading ? <span className="loading-dot">.</span> : <Send size={18} />}
                 </button>
             </div>
         </div>
