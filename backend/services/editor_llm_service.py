@@ -11,10 +11,68 @@ class EditorLLMService:
             self.client = None
             print("Warning: GROQ_API_KEY not found in settings. Editor LLM features will be disabled.")
             
-        # Default text model (can be used for fallbacks)
-        self.text_model = "openai/gpt-oss-120b"
-        # Vision model
+        # Literary refinement model (high quality text generation)
+        self.literary_model = "openai/gpt-oss-120b"
+        # Vision model (image understanding)
         self.vision_model = "meta-llama/llama-4-maverick-17b-128e-instruct"
+
+    def _literary_refine(self, raw_text: str, context: str = "", style_hint: str = "evocative literary prose") -> str:
+        """
+        Refines raw text (typically from vision model) into rich, literary prose.
+        This is the second stage of the two-stage pipeline.
+        
+        Args:
+            raw_text: The raw text to refine (e.g., from Maverick vision output)
+            context: Additional context (story blocks, user direction, etc.)
+            style_hint: The style to aim for (default: evocative literary prose)
+            
+        Returns:
+            Refined, literary text
+        """
+        if not self.client or not raw_text:
+            return raw_text
+        
+        prompt = f"""You are a master literary craftsperson. Transform the following raw text into {style_hint}.
+
+RAW TEXT (from image analysis):
+{raw_text}
+
+ADDITIONAL CONTEXT:
+{context if context else "No additional context."}
+
+REQUIREMENTS:
+1. Preserve the core meaning and visual observations
+2. Transform it into rich, evocative prose with:
+   - Sensory imagery (sight, sound, touch, smell, taste)
+   - Literary devices (metaphor, simile, personification)
+   - Rhythmic sentence variation
+   - Emotional resonance
+3. Make it feel like a passage from a literary novel, NOT a technical description
+4. Keep the length similar but make every word count
+5. DO NOT add explanatory meta-text like "Here's the refined version..."
+
+Write ONLY the refined prose, nothing else:"""
+
+        try:
+            chat_completion = self.client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a literary artist. You transform plain descriptions into evocative prose. Output only the refined text with no preamble."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    }
+                ],
+                model=self.literary_model,
+                max_tokens=2000,
+                temperature=0.85,  # Higher creativity for literary output
+            )
+            return chat_completion.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"Error in literary refinement: {e}")
+            return raw_text  # Fallback to raw text on error
 
     def generate_post_suggestion(self, text_blocks: list, suggestion_type: str, user_commentary: str = "") -> dict:
         """
@@ -68,7 +126,7 @@ class EditorLLMService:
                         "content": prompt,
                     }
                 ],
-                model=self.text_model,
+                model=self.literary_model,
                 response_format={"type": "json_object"},
             )
 
@@ -81,8 +139,9 @@ class EditorLLMService:
 
     def chat_with_vision(self, image_url: str, text_blocks: list, user_message: str, conversation_history: list = None) -> dict:
         """
-        Vision-enabled chat that can see the image and understand context.
-        Uses Llama 4 Maverick for vision capabilities.
+        Vision-enabled chat using a TWO-STAGE PIPELINE:
+        Stage 1: Maverick analyzes the image and generates raw understanding
+        Stage 2: GPT-OSS-120B refines the output into literary prose
         
         Args:
             image_url: URL of the image to analyze
@@ -91,7 +150,7 @@ class EditorLLMService:
             conversation_history: Previous messages in the conversation
             
         Returns:
-            Dictionary with 'response' key containing the AI response
+            Dictionary with 'response' key containing the refined AI response
         """
         if not self.client:
             return {"response": "LLM service is not configured (missing GROQ_API_KEY)."}
@@ -102,71 +161,76 @@ class EditorLLMService:
                 f"[{block.get('type', 'paragraph')}]: {block.get('content', '')}" 
                 for block in text_blocks if block.get('content')
             ])
-            context_instruction = "EXISTING TEXT BLOCKS (Use these for context, but prioritize image visuals if they conflict):"
         else:
-            blocks_context = "No written content yet. Start fresh based on the image."
-            context_instruction = "CONTEXT: The user hasn't written anything yet. Rely heavily on the visual details in the image."
+            blocks_context = "No written content yet."
 
         # Build conversation context
         conv_context = ""
         if conversation_history:
-            for msg in conversation_history[-10:]:  # Last 10 messages
+            for msg in conversation_history[-6:]:  # Last 6 messages for context
                 role = "User" if msg.get("role") == "user" else "Assistant"
                 conv_context += f"{role}: {msg.get('content', '')}\n"
 
-        system_prompt = """You are a creative writing assistant with vision capabilities. 
-You can see the image being referenced and help the user write, edit, and enhance their text content.
+        # ═══════════════════════════════════════════════════════════════════
+        # STAGE 1: MAVERICK - Vision Understanding
+        # ═══════════════════════════════════════════════════════════════════
+        vision_prompt = f"""Analyze this image carefully and respond to the user's request.
 
-CRITICAL INSTRUCTIONS:
-1. FOCUS ON THE IMAGE: Use the visual details to ground your writing.
-2. NO REPETITION: Do not repeat words like "Page" or "Image" pointlessly.
-3. BE CONCISE & HELPUL: Avoid fluff. Go straight to the prose or answer.
-4. NO OCR ARTIFACTS: Do not output random page numbers or footer text.
-
-Your responses should be:
-- Contextually aware of both the image and existing text
-- Creative and engaging
-- Helpful for storytelling and prose writing
-- Synchronized with what's visible in the image"""
-
-        messages = [
-            {"role": "system", "content": system_prompt}
-        ]
-
-        # Main user message with image and context
-        user_content = [
-            {
-                "type": "image_url",
-                "image_url": {"url": image_url}
-            },
-            {
-                "type": "text", 
-                "text": f"""IMAGE CONTEXT: I'm sharing an image with you.
-
-{context_instruction}
-{blocks_context}
+EXISTING STORY CONTEXT:
+{blocks_context[:2000]}
 
 CONVERSATION SO FAR:
 {conv_context}
 
-USER MESSAGE: {user_message}
+USER REQUEST: {user_message}
 
-Please respond helpfully. If I asked for a story or description, write it clearly without repeating yourself."""
-            }
+Provide a detailed, helpful response that:
+1. Directly addresses what the user asked
+2. References specific visual elements from the image
+3. Connects observations to the existing story context if relevant
+4. Is substantive and informative
+
+Respond clearly and concisely:"""
+
+        messages = [
+            {"role": "system", "content": "You are a vision-enabled assistant. Describe what you see and respond helpfully. Be direct and avoid repetition."},
+            {"role": "user", "content": [
+                {"type": "image_url", "image_url": {"url": image_url}},
+                {"type": "text", "text": vision_prompt}
+            ]}
         ]
 
-        messages.append({"role": "user", "content": user_content})
-
         try:
-            chat_completion = self.client.chat.completions.create(
+            # Stage 1: Get raw vision understanding from Maverick
+            vision_completion = self.client.chat.completions.create(
                 messages=messages,
                 model=self.vision_model,
-                max_tokens=2000,
+                max_tokens=1500,
                 temperature=0.7,
             )
-
-            response_content = chat_completion.choices[0].message.content
-            return {"response": response_content}
+            
+            raw_vision_response = vision_completion.choices[0].message.content
+            
+            # ═══════════════════════════════════════════════════════════════════
+            # STAGE 2: GPT-OSS - Literary Refinement
+            # ═══════════════════════════════════════════════════════════════════
+            # Determine if literary refinement is appropriate
+            # (Skip for short/simple queries like "what color is X?")
+            needs_literary = len(raw_vision_response) > 150 or any(
+                keyword in user_message.lower() 
+                for keyword in ['story', 'describe', 'write', 'narrative', 'prose', 'literary', 'tell me about', 'elaborate', 'expand']
+            )
+            
+            if needs_literary:
+                refined_response = self._literary_refine(
+                    raw_text=raw_vision_response,
+                    context=f"Story context: {blocks_context[:1000]}\nUser asked: {user_message}",
+                    style_hint="evocative, literary prose suitable for a visual story"
+                )
+                return {"response": refined_response}
+            else:
+                # For simple queries, return the raw response
+                return {"response": raw_vision_response}
 
         except Exception as e:
             print(f"Error in vision chat: {e}")
@@ -191,7 +255,7 @@ Please respond helpfully based on the text context provided."""
                     {"role": "system", "content": "You are a creative writing assistant helping with prose and storytelling."},
                     {"role": "user", "content": prompt}
                 ],
-                model=self.text_model,
+                model=self.literary_model,
                 max_tokens=2000,
             )
 
@@ -200,17 +264,90 @@ Please respond helpfully based on the text context provided."""
             print(f"Error in fallback chat: {e}")
             return {"response": "Sorry, I encountered an error. Please try again."}
 
+    def generate_node_expansion(self, node_text: str, image_url: str, story_context: str) -> dict:
+        """
+        Generates a detailed literary expansion for a specific story flow node.
+        Used when user clicks on a node in the StoryFlow visualization.
+        
+        Args:
+            node_text: The text of the clicked node (e.g., "The storm arrives")
+            image_url: URL of the associated image
+            story_context: The full story/text blocks for context
+            
+        Returns:
+            Dictionary with 'expansion' key containing rich literary prose about this moment
+        """
+        if not self.client:
+            return {"expansion": "LLM service is not configured."}
+
+        # Stage 1: Vision understanding of the image focused on this moment
+        vision_prompt = f"""Look at this image and focus on elements that relate to this story moment:
+
+STORY MOMENT: "{node_text}"
+
+FULL STORY CONTEXT:
+{story_context[:3000]}
+
+Identify and describe visual elements that connect to or illuminate this specific moment. 
+What in the image resonates with "{node_text}"?"""
+
+        try:
+            vision_completion = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "You are a visual analyst connecting image details to story moments."},
+                    {"role": "user", "content": [
+                        {"type": "image_url", "image_url": {"url": image_url}},
+                        {"type": "text", "text": vision_prompt}
+                    ]}
+                ],
+                model=self.vision_model,
+                max_tokens=800,
+                temperature=0.7,
+            )
+            
+            visual_analysis = vision_completion.choices[0].message.content
+            
+            # Stage 2: Literary expansion using both visual analysis and story context
+            expansion_prompt = f"""You are a literary master expanding a story moment into rich prose.
+
+THE MOMENT: "{node_text}"
+
+VISUAL OBSERVATIONS FROM THE IMAGE:
+{visual_analysis}
+
+STORY CONTEXT:
+{story_context[:2000]}
+
+TASK:
+Write a vivid, immersive literary passage (2-3 paragraphs) that:
+1. Brings this specific moment to life with sensory detail
+2. Incorporates the visual elements observed in the image
+3. Maintains consistency with the overall story
+4. Uses literary devices (metaphor, rhythm, imagery)
+5. Creates emotional resonance
+
+Write ONLY the expansion prose, no preamble or explanation:"""
+
+            literary_completion = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "You are a literary artist creating evocative prose."},
+                    {"role": "user", "content": expansion_prompt}
+                ],
+                model=self.literary_model,
+                max_tokens=1500,
+                temperature=0.85,
+            )
+            
+            return {"expansion": literary_completion.choices[0].message.content.strip()}
+            
+        except Exception as e:
+            print(f"Error in node expansion: {e}")
+            return {"expansion": f"Unable to expand this moment. Error: {str(e)}"}
+
     def rewrite_with_vision(self, image_url: str, block_content: str, rewrite_instruction: str = "") -> dict:
         """
         Rewrites a text block with awareness of the image content.
-        
-        Args:
-            image_url: URL of the image
-            block_content: Current content of the block to rewrite
-            rewrite_instruction: Optional specific instructions for rewriting
-            
-        Returns:
-            Dictionary with 'rewritten' key containing the new text
+        Uses two-stage pipeline for literary quality.
         """
         if not self.client:
             return {"rewritten": "LLM service is not configured (missing GROQ_API_KEY)."}
@@ -252,10 +389,21 @@ Return ONLY a valid JSON object:
             )
 
             response_content = chat_completion.choices[0].message.content
-            return json.loads(response_content)
+            result = json.loads(response_content)
+            
+            # Apply literary refinement to the rewritten content
+            if result.get("rewritten"):
+                result["rewritten"] = self._literary_refine(
+                    result["rewritten"],
+                    context=f"Original: {block_content}",
+                    style_hint="polished literary prose"
+                )
+            
+            return result
 
         except Exception as e:
             print(f"Error in vision rewrite: {e}")
             return {"rewritten": block_content}  # Return original on error
+
 
 editor_llm_service = EditorLLMService()
