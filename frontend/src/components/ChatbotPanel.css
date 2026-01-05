@@ -7,6 +7,34 @@
     color: var(--text-primary);
     font-family: inherit;
     /* Clean, flat design */
+    width: 380px;
+    min-width: 320px;
+    transition: width 0.3s ease, min-width 0.3s ease;
+    position: relative;
+}
+
+.chatbot-panel.expanded {
+    width: 600px;
+    min-width: 500px;
+}
+
+/* Resize handle visual indicator */
+.chatbot-panel::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 60px;
+    background: var(--border-subtle);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.chatbot-panel:hover::before {
+    opacity: 0.5;
 }
 
 /* Header */
@@ -53,7 +81,8 @@
 }
 
 .context-btn,
-.clear-btn {
+.clear-btn,
+.expand-btn {
     display: flex;
     align-items: center;
     gap: 0.4rem;
@@ -64,13 +93,21 @@
     background-color: var(--bg-primary);
     color: var(--text-secondary);
     transition: all 0.2s;
+    cursor: pointer;
 }
 
 .context-btn:hover,
-.clear-btn:hover {
+.clear-btn:hover,
+.expand-btn:hover {
     background-color: var(--bg-secondary);
     border-color: var(--border-medium);
     color: var(--text-primary);
+}
+
+.expand-btn:hover {
+    background-color: var(--accent-surface);
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
 }
 
 .context-btn.active {
@@ -369,4 +406,26 @@
     100% {
         transform: rotate(360deg);
     }
+}
+
+/* System Messages (for node expansion context) */
+.chat-message.system {
+    align-self: center;
+    max-width: 100%;
+}
+
+.chat-message.system .message-content {
+    background-color: var(--accent-surface);
+    border: 1px dashed var(--accent-primary);
+    color: var(--accent-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-pill);
+    text-align: center;
+}
+
+.system-message {
+    background-color: transparent !important;
+    border: none !important;
 }
