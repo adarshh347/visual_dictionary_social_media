@@ -90,3 +90,7 @@ class NodeExpansionRequest(BaseModel):
     node_text: str
     image_url: str
     story_context: str
+
+class UrlUploadRequest(BaseModel):
+    image_url: str
+    general_tags: Optional[List[str]] = []

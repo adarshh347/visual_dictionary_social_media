@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sharirasutra</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      width: 300px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #5b9ab9 0%, #7ab8d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .tagline {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    
+    .instructions {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .instructions h3 {
+      font-size: 14px;
+      color: #334155;
+      margin-bottom: 12px;
+    }
+    
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    
+    .step-number {
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, #5b9ab9 0%, #7ab8d4 100%);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    .step-text {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.4;
+    }
+    
+    .open-gallery {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      background: linear-gradient(135deg, #5b9ab9 0%, #7ab8d4 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    
+    .open-gallery:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(91, 154, 185, 0.3);
+    }
+    
+    .status {
+      margin-top: 16px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      text-align: center;
+    }
+    
+    .status.connected {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    .status.disconnected {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">शरीरसूत्र</div>
+    <div class="tagline">Visual Dictionary for Stories</div>
+  </div>
+  
+  <div class="instructions">
+    <h3>How to Save Images</h3>
+    <div class="step">
+      <span class="step-number">1</span>
+      <span class="step-text">Browse any website normally</span>
+    </div>
+    <div class="step">
+      <span class="step-number">2</span>
+      <span class="step-text">Hover over an image you like</span>
+    </div>
+    <div class="step">
+      <span class="step-number">3</span>
+      <span class="step-text">Click the "Save to Sharirasutra" button that appears</span>
+    </div>
+  </div>
+  
+  <a href="http://localhost:5173/gallery" target="_blank" class="open-gallery">
+    Open Gallery
+  </a>
+  
+  <div id="status" class="status">Checking connection...</div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
