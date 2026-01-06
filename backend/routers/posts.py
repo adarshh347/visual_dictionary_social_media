@@ -103,6 +103,7 @@ async def create_post_from_url(request: UrlUploadRequest):
     Upload an image from a URL (used by the Chrome extension).
     Fetches the image and uploads it to Cloudinary.
     """
+    print(f"--- Processing URL Upload: {request.image_url} ---")
     try:
         # Fetch the image from the URL
         async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
@@ -117,35 +118,50 @@ async def create_post_from_url(request: UrlUploadRequest):
             
             # Check if it's an image
             content_type = response.headers.get("content-type", "")
+            print(f"Image fetched. Content-Type: {content_type}, Size: {len(response.content)} bytes")
+            
             if not content_type.startswith("image/"):
                 raise HTTPException(status_code=400, detail=f"URL does not point to an image (content-type: {content_type})")
             
             # Upload to Cloudinary
+            print("Uploading to Cloudinary...")
             image_data = BytesIO(response.content)
             public_id = f"posts/{uuid.uuid4()}"
             upload_result = cloudinary.uploader.upload(image_data, public_id=public_id)
+            print(f"Cloudinary upload successful: {upload_result.get('secure_url')}")
             
     except httpx.HTTPStatusError as e:
+        print(f"HTTP fetch error: {e}")
         raise HTTPException(status_code=400, detail=f"Failed to fetch image: HTTP {e.response.status_code}")
     except httpx.RequestError as e:
+        print(f"Request error: {e}")
         raise HTTPException(status_code=400, detail=f"Failed to fetch image: {str(e)}")
     except Exception as e:
+        print(f"CRITICAL UPLOAD ERROR: {type(e).__name__}: {str(e)}")
+        # Check if it's a Cloudinary specific error
+        if "Must supply cloud_name" in str(e):
+             print("CHECK .ENV: CLOUDINARY_NAME is missing!")
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
     
     # Create the post document
-    post_document = {
-        "photo_url": upload_result["secure_url"],
-        "photo_public_id": upload_result["public_id"],
-        "updated_at": datetime.now(timezone.utc),
-        "text_blocks": [],
-        "bounding_box_tags": {},
-        "general_tags": request.general_tags or [],
-        "source_url": request.image_url  # Store original URL for reference
-    }
-    
-    new_post = await post_collection.insert_one(post_document)
-    created_post = await post_collection.find_one({"_id": new_post.inserted_id})
-    return post_helper(created_post)
+    try:
+        post_document = {
+            "photo_url": upload_result["secure_url"],
+            "photo_public_id": upload_result["public_id"],
+            "updated_at": datetime.now(timezone.utc),
+            "text_blocks": [],
+            "bounding_box_tags": {},
+            "general_tags": request.general_tags or [],
+            "source_url": request.image_url  # Store original URL for reference
+        }
+        
+        new_post = await post_collection.insert_one(post_document)
+        print(f"Post created in MongoDB: {new_post.inserted_id}")
+        created_post = await post_collection.find_one({"_id": new_post.inserted_id})
+        return post_helper(created_post)
+    except Exception as e:
+        print(f"DATABASE ERROR: {e}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 # below part commented out
 

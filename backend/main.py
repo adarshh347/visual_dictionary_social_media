@@ -10,6 +10,7 @@ app = FastAPI(title="visual dictionary")
 
 # for security reasons, browsers block requests between multiple addresses
 # CORS(cross origin resource sharing) allows both to get connected
+# Note: Using "*" to allow Chrome extension to make requests from any website
 origins = [
     "http://localhost:5173",
     "https://sharirasutra.onrender.com",
@@ -21,10 +22,11 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins for Chrome extension
+    allow_credentials=False,  # Must be False when using "*"
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
